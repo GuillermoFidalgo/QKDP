@@ -7,4 +7,5 @@ The program should:
 5. the program must be fully commented, 
 6. along with the key produced, the program should calculate all relevant statistics such as probability that the key is compromised, percentage of discarded bits and percentage of bits that Eve gets. These are just some examples, I'm sure you can think of more.
 
-## Disclaimer CODE SIMULATION TAKES A LONG TIME. Please be patient in order to see the results.
+## Disclaimer 
+Depending on the parameters used for the simulation of BB84 this may take a long time. Please be patient in order to see the results.
