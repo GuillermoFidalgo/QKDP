@@ -9,3 +9,7 @@ The program should:
 
 ## Disclaimer 
 Depending on the parameters used for the simulation of BB84 this may take a long time. Please be patient in order to see the results.
+
+# Things to know
+
+To run the code in Google Colab you just go the [notebook](https://github.com/GuillermoFidalgo/QKDP/blob/master/BB84.ipynb) and click on the <img src="https://github.com/GuillermoFidalgo/Python-for-STEM-Teachers-Workshop/blob/master/colab-button.png" alt="Open In Colab" width="120"/> found on top of the file and you will instantly open the document online. 
