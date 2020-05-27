@@ -7,8 +7,6 @@ The program should:
 5. the program must be fully commented, 
 6. along with the key produced, the program should calculate all relevant statistics such as probability that the key is compromised, percentage of discarded bits and percentage of bits that Eve gets. These are just some examples, I'm sure you can think of more.
 
-**Disclaimer**
-Depending on the parameters used for the simulation of BB84 this may take a long time. Please be patient in order to see the results.
 
 ## Running the notebook using Google Colab (online)
 
@@ -59,3 +57,11 @@ In both cases wait for output, copy and paste this into your browser of choice
 4. pandas
 
 
+# Disclaimer
+Depending on the parameters used for the simulation of BB84 this may take a long time. Please be patient in order to see the results.
+
+If you use Google Colab, then the section that uses a CSV file from a more time consuming simulation **will not work as is**.
+Please change the argument in 
+`df=pd.read_csv('Distribution-Data-for-BB84.csv')` to `df=pd.read_csv('https://raw.githubusercontent.com/GuillermoFidalgo/QKDP/master/Distribution-Data-for-BB84.csv')`
+
+All images produced in this script are downloaded to memory in a folder called `plots_BB84`
