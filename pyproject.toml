@@ -1,0 +1,18 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "qcrypto"
+version = "0.0.1"
+authors = [
+    {name = "Roy Cruz", email = "roy.cruz@upr.edu"},
+    {name = "Guillermo Fidalgo", email = ""},
+    {name = "Tetiana Mazurets", email = ""},
+]
+description = "A package for simple quantum cryptography simulations."
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.urls]
+Homepage = "https://github.com/GuillermoFidalgo/QKDP"
