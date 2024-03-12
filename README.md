@@ -72,3 +72,15 @@ df=pd.read_csv('https://raw.githubusercontent.com/GuillermoFidalgo/QKDP/master/D
 ```
 
 All images produced in this script are downloaded to memory in a folder called `plots_BB84`
+
+
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
