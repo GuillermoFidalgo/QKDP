@@ -7,8 +7,8 @@ name = "qcrypto"
 version = "0.0.1"
 authors = [
     {name = "Roy Cruz", email = "roy.cruz@upr.edu"},
-    {name = "Guillermo Fidalgo", email = ""},
-    {name = "Tetiana Mazurets", email = ""},
+    {name = "Guillermo Fidalgo", email = "guillermo.fidalgo@upr.edu"},
+    {name = "Tetiana Mazurets", email = "tetiana.mazurets@upr.edu"},
 ]
 description = "A package for simple quantum cryptography simulations."
 readme = "README.md"

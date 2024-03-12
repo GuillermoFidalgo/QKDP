@@ -6,7 +6,7 @@ class Qubit:
     """
     Data class which represents the qubit and its quantum state.
     Quantum state is given by:
-    |psi> = cos(theta/2) |0> + e^{i*phi} * sin(theta/2) |1>
+    |\psi> = \cos(\frac12 \theta) |0> + e^{i\phi}  \sin(\frac12 \theta) |1>
     """
 
     def __init__(self, theta, phi, base):
