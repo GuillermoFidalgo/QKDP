@@ -1,4 +1,7 @@
-# Quantum Key Distribution Protocol BB84
+[![All Contributors](https://img.shields.io/github/all-contributors/GuillermoFidalgo/QKDP?color=ee8449&style=flat-square)](#contributors)
+
+
+# Quantum Key Distribution Protocol BB84 
 The program should:
 1. use a random number generator at every point in the protocol where random numbers are needed,
 2. be interactive allowing the user to run the program as many times as he/she likes and only stopping when the user wants to quit,
