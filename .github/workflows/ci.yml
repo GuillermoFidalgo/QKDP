@@ -1,5 +1,5 @@
 name: Auto Testing
-on: 
+on:
   pull_request:
   push:
     branches:
