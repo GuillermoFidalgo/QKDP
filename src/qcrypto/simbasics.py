@@ -1,6 +1,7 @@
 import numpy as np
 import dataclasses
 
+
 @dataclasses.dataclass
 class Qubit:
     """
@@ -11,14 +12,11 @@ class Qubit:
 
     def __init__(self, theta, phi, base):
         self.base = base
-        self.state = np.array([
-            np.cos(theta/2),
-            np.exp(1j * phi) * np.sin(theta/2)
-        ])
+        self.state = np.array([np.cos(theta / 2), np.exp(1j * phi) * np.sin(theta / 2)])
 
     def __str__(self):
         return "{} |0> + {} |1>".format(self.state[0], self.state[1])
-    
+
     def __repr__(self):
         return "{} |0> + {} |1>".format(self.state[0], self.state[1])
 
@@ -36,12 +34,13 @@ class Qubit:
         prob0 = (np.conjugate(self.state[0]) * self.state[0]).real
         prob1 = (np.conjugate(self.state[1]) * self.state[1]).real
         return prob0, prob1
-    
+
 
 class Agent:
     """
     Class representing the players in a quantum cryptography simulation (e.g. Alice, Eve or Bob)
     """
+
     def __init__(self, base=0, phase=0, key=None, message=None):
         self.base = base
         self.phase = phase
@@ -54,11 +53,16 @@ class Agent:
         base_delta = self.base - newqubit.base
 
         # Projection oprator
-        proj_mtrx = np.array([
-            [np.cos(base_delta),                                -1 * np.exp(-1j * self.phase) * np.sin(base_delta)],
-            [np.sin(base_delta) * np.exp(-1j * self.phase),     np.cos(base_delta)                                ]
-        ])
-        
+        proj_mtrx = np.array(
+            [
+                [
+                    np.cos(base_delta),
+                    -1 * np.exp(-1j * self.phase) * np.sin(base_delta),
+                ],
+                [np.sin(base_delta) * np.exp(-1j * self.phase), np.cos(base_delta)],
+            ]
+        )
+
         newqubit.state = np.dot(proj_mtrx, newqubit.state)
         newqubit.normalize()
 
@@ -72,10 +76,10 @@ class Agent:
         """
         self.project(qubit)
         measurement_result = np.random.choice((0, 1), p=qubit.get_probs())
-        return(measurement_result)
+        return measurement_result
 
     def send_quantum(self, receiverAgent, qubits):
         pass
-    
+
     def send_classic(self, receiverAgent, bits):
         pass
