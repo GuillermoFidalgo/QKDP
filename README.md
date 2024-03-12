@@ -1,3 +1,6 @@
+[![All Contributors](https://img.shields.io/github/all-contributors/GuillermoFidalgo/QKDP?color=ee8449&style=flat-square)](#contributors)
+
+
 # Quantum Key Distribution Protocol BB84
 The program should:
 1. use a random number generator at every point in the protocol where random numbers are needed,
@@ -72,3 +75,15 @@ df=pd.read_csv('https://raw.githubusercontent.com/GuillermoFidalgo/QKDP/master/D
 ```
 
 All images produced in this script are downloaded to memory in a folder called `plots_BB84`
+
+
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
