@@ -27,6 +27,7 @@ class Qubit:
         Nomalizes the qubit's quantum state
         """
         self.state = self.state / np.sqrt(np.dot(np.conjugate(self.state), self.state))
+        return self.state
 
     def get_probs(self):
         """
