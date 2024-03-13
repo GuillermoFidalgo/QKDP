@@ -1,4 +1,5 @@
 # Quantum Key Distribution Protocol BB84
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/GuillermoFidalgo/QKDP/master.svg)](https://results.pre-commit.ci/latest/github/GuillermoFidalgo/QKDP/master)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
