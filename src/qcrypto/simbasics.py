@@ -2,7 +2,6 @@ import numpy as np
 import dataclasses
 
 
-
 @dataclasses.dataclass
 class Qubit:
     """
@@ -19,7 +18,6 @@ class Qubit:
 
     def __str__(self):
         return "{} |0> + {} |1>".format(self.state[0], self.state[1])
-
 
     def __repr__(self):
         return "{} |0> + {} |1>".format(self.state[0], self.state[1])
