@@ -88,7 +88,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="http://guillermofidalgo.github.io"><img src="https://avatars.githubusercontent.com/u/17858942?v=4?s=100" width="100px;" alt="Guillermo A. Fidalgo-Rodríguez"/><br /><sub><b>Guillermo A. Fidalgo-Rodríguez</b></sub></a><br /><a href="#content-GuillermoFidalgo" title="Content">🖋</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="http://guillermofidalgo.github.io"><img src="https://avatars.githubusercontent.com/u/17858942?v=4?s=100" width="100px;" alt="Guillermo A. Fidalgo-Rodríguez"/><br /><sub><b>Guillermo A. Fidalgo-Rodríguez</b></sub></a><br /><a href="#content-GuillermoFidalgo" title="Content">🖋</a> <a href="https://github.com/GuillermoFidalgo/QKDP/commits?author=GuillermoFidalgo" title="Code">💻</a> <a href="#maintenance-GuillermoFidalgo" title="Maintenance">🚧</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/roy-cruz"><img src="https://avatars.githubusercontent.com/u/55238184?v=4?s=100" width="100px;" alt="Roy F. Cruz Candelaria"/><br /><sub><b>Roy F. Cruz Candelaria</b></sub></a><br /><a href="#research-roy-cruz" title="Research">🔬</a> <a href="https://github.com/GuillermoFidalgo/QKDP/commits?author=roy-cruz" title="Code">💻</a> <a href="#content-roy-cruz" title="Content">🖋</a></td>
     </tr>
   </tbody>
