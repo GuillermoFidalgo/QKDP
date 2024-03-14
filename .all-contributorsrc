@@ -15,6 +15,15 @@
       "contributions": [
         "content"
       ]
+    },
+    {
+      "login": "roy-cruz",
+      "name": "Roy F. Cruz Candelaria",
+      "avatar_url": "https://avatars.githubusercontent.com/u/55238184?v=4",
+      "profile": "https://github.com/roy-cruz",
+      "contributions": [
+        "research"
+      ]
     }
   ],
   "contributorsPerLine": 7,
