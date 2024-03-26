@@ -26,13 +26,14 @@ class Qubit:
         """
         Nomalizes the qubit's quantum state
         """
-        self.state = self.state / np.sqrt(np.dot(np.conjugate(self.state), self.state))
-        return self.state
+        norm = np.sqrt(np.dot(np.conjugate(self.state), self.state))
+        self.state /= norm
 
     def get_probs(self):
         """
         Gives the probabilities of getting 0 or 1 when measuring the qubit
         """
+
         prob0 = (np.conjugate(self.state[0]) * self.state[0]).real
         prob1 = (np.conjugate(self.state[1]) * self.state[1]).real
         return prob0, prob1
@@ -53,9 +54,9 @@ class Agent:
             basis_selection: Set of bases to choose from when generating the set of numqubits qubits.
                 If not given, will default to 0 and pi/2.
         """
-        self.qubits = np.array([], dtype=object)
-        self.measurements = np.array([], dtype=int)
-        self.key = np.array([], dtype=int)
+        self.qubits = []
+        self.measurements = []
+        self.key = []
 
         if numqubits is not None or numqubits != 0:
             if basis_selection is None:
@@ -69,7 +70,7 @@ class Agent:
                 # theta = 0 -> qubit = 0 state
                 # theta = pi -> qubit = 1 state
                 qubit = Qubit(np.random.choice([0, np.pi]), basis, phi=0)
-                self.qubits = np.append(self.qubits, qubit)
+                self.qubits.append(qubit)
 
     def project(self, qubit, base):
         """
@@ -99,29 +100,26 @@ class Agent:
         """
         self.project(qubit, base)
         measurement_result = np.random.choice((0, 1), p=qubit.get_probs())
-        self.measurements = np.append(self.measurements, measurement_result)
+        self.measurements.append(measurement_result)
         if rtrn_result:
             return measurement_result
 
-    # def reset_results(self):
-    # self.measurements = []
-
-    # def genbasis(self, numqubits):
-    # return np.random.choice([0, 1], numqubits)
-
     def send_quantum(self, recipient, recipient_bases):
+        # Recipient obtains the qubits from self and measures using given basis
         for qubit, base in zip(self.qubits, recipient_bases):
             recipient.measure(qubit.copy(), base)
 
-        recipient.qubits = np.array([], dtype=object)
+        # Recipient construct qubits based on these measurements and on their own basis selection
+        recipient.qubits = []
         for base, measurement in zip(recipient_bases, recipient.measurements):
             received_qubit = Qubit(measurement * np.pi, base)  # measurement = 0 or 1
-            recipient.qubits = np.append(recipient.qubits, received_qubit)
+            recipient.qubits.append(received_qubit)
+        recipient.qubits = np.array(recipient.qubits)
 
     def get_key(self, bases):
         for qubit, base in zip(self.qubits, bases):
             measurement = self.measure(qubit, base)
-            self.key = np.append(self.key, measurement)
+            self.key.append(measurement)
         return self.key
 
     def send_classic(self, receiverAgent, bits):
