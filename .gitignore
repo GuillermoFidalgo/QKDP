@@ -2,4 +2,5 @@
 .DS_Store
 .pre-commit-config.yaml
 src/qcrypto/__pycache__/
+tests/__pycache__/
 dist
