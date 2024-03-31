@@ -1,7 +1,7 @@
 # Quantum Key Distribution Protocol BB84
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/GuillermoFidalgo/QKDP/master.svg)](https://results.pre-commit.ci/latest/github/GuillermoFidalgo/QKDP/master)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 The program should:
 1. use a random number generator at every point in the protocol where random numbers are needed,
@@ -90,6 +90,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="http://guillermofidalgo.github.io"><img src="https://avatars.githubusercontent.com/u/17858942?v=4?s=100" width="100px;" alt="Guillermo A. Fidalgo-Rodríguez"/><br /><sub><b>Guillermo A. Fidalgo-Rodríguez</b></sub></a><br /><a href="#content-GuillermoFidalgo" title="Content">🖋</a> <a href="https://github.com/GuillermoFidalgo/QKDP/commits?author=GuillermoFidalgo" title="Code">💻</a> <a href="#maintenance-GuillermoFidalgo" title="Maintenance">🚧</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/roy-cruz"><img src="https://avatars.githubusercontent.com/u/55238184?v=4?s=100" width="100px;" alt="Roy F. Cruz Candelaria"/><br /><sub><b>Roy F. Cruz Candelaria</b></sub></a><br /><a href="#research-roy-cruz" title="Research">🔬</a> <a href="https://github.com/GuillermoFidalgo/QKDP/commits?author=roy-cruz" title="Code">💻</a> <a href="#content-roy-cruz" title="Content">🖋</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/tetianmaz"><img src="https://avatars.githubusercontent.com/u/126983407?v=4?s=100" width="100px;" alt="tetianmaz"/><br /><sub><b>tetianmaz</b></sub></a><br /><a href="#content-tetianmaz" title="Content">🖋</a> <a href="https://github.com/GuillermoFidalgo/QKDP/commits?author=tetianmaz" title="Code">💻</a> <a href="https://github.com/GuillermoFidalgo/QKDP/commits?author=tetianmaz" title="Tests">⚠️</a></td>
     </tr>
   </tbody>
 </table>
