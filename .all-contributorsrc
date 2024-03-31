@@ -28,6 +28,17 @@
         "code",
         "content"
       ]
+    },
+    {
+      "login": "tetianmaz",
+      "name": "tetianmaz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/126983407?v=4",
+      "profile": "https://github.com/tetianmaz",
+      "contributions": [
+        "content",
+        "code",
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,
