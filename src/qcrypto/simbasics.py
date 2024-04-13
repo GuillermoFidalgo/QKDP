@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing as npt
 import dataclasses
 from qcrypto.gates import *
 from typing import List, Union
@@ -12,7 +13,7 @@ class QState(ABC):
         pass
 
     @abstractmethod
-    def measure_all(self, order="simult"):
+    def measure_all(self):
         pass
 
     @abstractmethod
@@ -59,7 +60,17 @@ class QstateUnEnt(QState):
             self.num_qubits = len(self.state)
         self.state = np.asarray(self.state, dtype=np.complex_)
 
-    def measure(self, qubit_idx=None):
+    def measure(self, qubit_idx: int = None) -> int:
+        """
+        Simulates the measurement of a single qubit. As a result, the state of said qubit is collapsed depending on the result.
+
+        Args:
+            qubit_idx (int): Index of the qubit to be measured
+        
+        Returns:
+            Outcome of the measurement. Also collapses the state of the qubit.
+        
+        """
         if qubit_idx is not None:
             probs_0, probs_1 = self._calculate_measurement_probs(qubit_idx)
             outcome = np.random.choice([0, 1], p=[probs_0, probs_1])
@@ -68,13 +79,33 @@ class QstateUnEnt(QState):
         else:
             raise ValueError("qubit_idx not specified")
 
-    def measure_all(self, order="simult"):
+    def measure_all(self) -> npt.NDArray[int]:
+        """
+        Measures all of the qubits in sequential order.
+
+        Args:
+            n/a
+
+        Returns:
+            Numpy array containing the outcome of all of the measurments.
+        
+        """
         outcome = []
         for qubit_idx in range(self.num_qubits):
             outcome.append(self.measure(qubit_idx=qubit_idx))
         return np.array(outcome)
 
-    def apply_gate(self, gate, qubit_idx=None):
+    def apply_gate(self, gate: npt.NDArray[np.complex_], qubit_idx: Union[int, list]=None):
+        """
+        Applies a given gate to a subset of qubits, modifying the quantum state.
+
+        Args:
+            gate (np.array): Gate to be applied. Represented as a numpy matrix
+            qubit_idx (int, list): Index/Indices of qubit/qubits which will be transformed by gate
+
+        Returns:
+            None
+        """
         if qubit_idx is not None:
             self.state[qubit_idx] = np.dot(gate, self.state[qubit_idx])
         else:
@@ -82,18 +113,49 @@ class QstateUnEnt(QState):
             new_states = np.dot(gate, reshaped_states)
             self.state = new_states.reshape(self.state.shape)
 
-    def _calculate_measurement_probs(self, qubit_idx):
+    def _calculate_measurement_probs(self, qubit_idx: int) -> tuple[int, ...]:
+        """
+        Computes the probability of measuring qubit_idx to be in state 0 or 1 in whatever base its in.
+
+        Args:
+            qubit_idx (int): Index of qubit
+        
+        Returns:
+            Probabilities of obtaining 0 and 1 if qubit were to be measured
+        """
+
         prob_0 = np.abs(self.state[qubit_idx, 0]) ** 2
         prob_1 = np.abs(self.state[qubit_idx, 1]) ** 2
         return prob_0, prob_1
 
-    def _update_state_post_measurement(self, qubit_idx, outcome):
+    def _update_state_post_measurement(self, qubit_idx: int, outcome: int):
+        """
+        Updates the quantum state of a qubit by projecting it unto a given outcome state.
+
+        Args:
+            qubit_idx (int): Index of qubit
+            outcome (int): Outcome unto which the qubit will be projected
+        
+        Returns:
+            None
+        """
+
         if outcome == 0:
             self.state[qubit_idx] = np.array([1, 0], dtype=np.complex_)
         else:
             self.state[qubit_idx] = np.array([0, 1], dtype=np.complex_)
 
     def _normalize_state(self):
+        """
+        Normalizes the quantum state.
+
+        Args:
+            n/a
+
+        Returns:
+            None
+        """
+
         norms = np.linalg.norm(self.state, axis=1)
         norms = norms.reshape(-1, 1)
         self.state = self.state / norms
@@ -208,6 +270,12 @@ class Agent:
     pblc_qbittype: str = None
 
     def __post_init__(self):
+        self.qstates = {
+            "private": None,
+            "public": None
+        }
+
+
         if self.priv_qstates is None and self.priv_qbittype == "entangled":
             self.priv_qstates = QstateEnt(
                 num_qubits=self.num_priv_qubits, init_method=self.init_method
