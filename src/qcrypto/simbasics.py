@@ -2,7 +2,7 @@ import numpy as np
 import numpy.typing as npt
 import dataclasses
 from qcrypto.gates import tensor_power
-from typing import Union, Dict
+from typing import Union, Dict, Tuple
 from abc import ABC, abstractmethod
 
 
@@ -116,7 +116,7 @@ class QstateUnEnt(QState):
             self._state = new_states.reshape(self._state.shape)
         self._normalize_state()
 
-    def _calculate_measurement_probs(self, qubit_idx: int) -> tuple[int, ...]:
+    def _calculate_measurement_probs(self, qubit_idx: int) -> Tuple[int, ...]:
         """
         Computes the probability of measuring qubit_idx to be in state 0 or 1 in whatever base its in.
 

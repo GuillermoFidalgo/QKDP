@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "qcrypto"
-version = "0.2.0"
+version = "1.0.0"
 authors = [
     {name = "Roy Cruz", email = "roy.cruz@upr.edu"},
     {name = "Guillermo Fidalgo", email = "guillermo.fidalgo@upr.edu"},
@@ -14,7 +14,13 @@ description = "A package for simple quantum cryptography simulations."
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
-    "numpy>=1.26.4"
+    "numpy"
+]
+
+[project.optional-dependencies]
+tests = [
+    "pytest",
+    "coverage"
 ]
 
 [project.urls]
