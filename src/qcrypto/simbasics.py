@@ -2,7 +2,7 @@ import numpy as np
 import numpy.typing as npt
 import dataclasses
 from qcrypto.gates import *
-from typing import List, Union
+from typing import Union, Dict
 from abc import ABC, abstractmethod
 
 
@@ -79,7 +79,7 @@ class QstateUnEnt(QState):
         else:
             raise ValueError("qubit_idx not specified")
 
-    def measure_all(self) -> npt.NDArray[int]:
+    def measure_all(self, *kwargs) -> npt.NDArray[int]:
         """
         Measures all of the qubits in sequential order.
 
@@ -114,6 +114,7 @@ class QstateUnEnt(QState):
             reshaped_states = self._state.reshape(self._state.shape[0], 2, 1)
             new_states = np.dot(gate, reshaped_states)
             self._state = new_states.reshape(self._state.shape)
+        self._normalize_state()
 
     def _calculate_measurement_probs(self, qubit_idx: int) -> tuple[int, ...]:
         """
@@ -222,7 +223,7 @@ class QstateEnt(QState):
         self._update_state_post_measurement(qubit_idx, outcome)
         return outcome
 
-    def measure_all(self, order="simult"):
+    def measure_all(self, order):
         """
         Measures all of the qubits
 
@@ -333,6 +334,7 @@ class QstateEnt(QState):
         N = int(np.log2(len(self._state)))
         gate = tensor_power(gate, N)
         self._state = np.dot(gate, self._state)
+        self._normalize_state()
 
     def __str__(self):
         return str(self._state)
@@ -344,49 +346,84 @@ class QstateEnt(QState):
 @dataclasses.dataclass
 class Agent:
     num_priv_qubits: int = None
+    qstates: Dict[str, npt.NDArray[np.complex_]] = dataclasses.field(
+        default_factory=lambda: {"private": None, "public": None}
+    )
+    keys: Dict[str, npt.NDArray[np.int_]] = dataclasses.field(
+        default_factory=lambda: {"private": None, "public": None}
+    )
     priv_qstates: Union[QstateEnt, QstateUnEnt] = None
-    pblc_qstates: Union[QstateEnt, QstateUnEnt] = None
-    priv_key: List = dataclasses.field(default_factory=lambda: [])
-    pblc_key: List = dataclasses.field(default_factory=lambda: [])
     init_method: str = "random"
     priv_qbittype: str = None
-    pblc_qbittype: str = None
 
     def __post_init__(self):
         self.qstates = {"private": None, "public": None}
 
         if self.priv_qstates is None and self.priv_qbittype == "entangled":
-            self.priv_qstates = QstateEnt(
-                num_qubits=self.num_priv_qubits, init_method=self.init_method
+            self.set_qstate(
+                QstateEnt(
+                    num_qubits=self.num_priv_qubits, init_method=self.init_method
+                ),
+                "private",
             )
         elif self.priv_qstates is None and self.priv_qbittype == "unentangled":
-            self.priv_qstates = QstateUnEnt(
-                num_qubits=self.num_priv_qubits, init_method=self.init_method
+            self.set_qstate(
+                QstateUnEnt(
+                    num_qubits=self.num_priv_qubits, init_method=self.init_method
+                ),
+                "private",
             )
 
+    def set_qstate(
+        self, qstate: Union[QstateEnt, QstateUnEnt], qstate_type: str
+    ) -> None:
+        """
+        Sets a given qstate as either a private or public qubit of the Agent
+
+        Args:
+            qstate (QstateEnt or QstateUnEnt): Quantum state of a private or public system of qubits
+            qstate_type (str): Whether the given qstate is to be private or public
+
+        Returns:
+            None
+        """
+        if not isinstance(qstate, QstateUnEnt) and not isinstance(qstate, QstateEnt):
+            raise ValueError("Wrong type given for system state.")
+
+        self.qstates[qstate_type] = qstate
+
     def measure(self, qstate_type, qubit_idx=None):
-        if qstate_type == "private" and self.priv_qstates is not None:
-            return self.priv_qstates.measure(qubit_idx=qubit_idx)
-        elif qstate_type == "public" and self.pblc_qstates is not None:
-            return self.pblc_qstates.measure(qubit_idx=qubit_idx)
-        else:
-            raise ValueError("Invalid Qstate type or no Qstate object.")
+        if qstate_type not in self.qstates.keys():
+            raise ValueError("Not valid qstate type.")
+
+        outcome = self.qstates[qstate_type].measure(qubit_idx=qubit_idx)
+        return outcome
+
+    def measure_all(self, qstate_type, order=None):
+        if qstate_type not in self.qstates.keys():
+            raise ValueError("Invalid qstate type")
+
+        outcome = self.qstates[qstate_type].measure_all(order)
+        return outcome
 
     def apply_gate(self, gate, qstate_type):
-        if qstate_type == "private" and self.priv_qstates is not None:
-            self.priv_qstates.apply_gate(gate)
-        elif qstate_type == "public" and self.pblc_qstates is not None:
-            self.pblc_qstates.apply_gate(gate)
-        else:
-            raise ValueError("Invalid Qstate type or no Qstate object.")
+        if qstate_type not in self.qstates.keys():
+            raise ValueError("Invalid qstate type")
 
-    def measure_all(self, qstate_type, order="simult"):
-        if qstate_type == "private" and self.priv_qstates is not None:
-            return self.priv_qstates.measure_all(order=order)
-        elif qstate_type == "public" and self.pblc_qstates is not None:
-            return self.pblc_qstates.measure_all(order=order)
-        else:
-            raise ValueError("Invalid Qstate type or no Qstate object.")
+        self.qstates[qstate_type].apply_gate(gate)
 
+<<<<<<< HEAD
     def get_key(self, qstate_type):
         return self.measure(qstate_type=qstate_type)
+=======
+    # def measure_all(self, qstate_type, order="simult"):
+    #     if qstate_type not in self.qstates.keys():
+    #         raise ValueError("Invalid qstate type")
+
+    #     self.qstates[qstate_type].measure_all(order=order)
+
+    def get_key(self, qstate_type, order=None):
+        outcome = self.measure_all(qstate_type=qstate_type, order=order)
+        self.keys[qstate_type] = outcome
+        return outcome
+>>>>>>> a5eef86 (Began making Agent tets compatible with new implem)
