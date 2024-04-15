@@ -1,5 +1,5 @@
 import unittest
-from qcrypto.simbasics import QstateUnEnt, QstateEnt, Agent
+from qcrypto.simbasics import QstateUnEnt, QstateEnt
 import numpy as np
 
 
@@ -61,7 +61,7 @@ class TestQubit(unittest.TestCase):
         Test case to verify the probability calculation of a QstateUnEnt object.
         """
         bin_outcome = "1010"
-        outcome = int(bin_outcome, 2) # 10
+        outcome = int(bin_outcome, 2)  # 10
         num_qubits = 4
         state = np.complex_(np.zeros(2**num_qubits))
         state[outcome] = 1 + 0j
@@ -69,9 +69,9 @@ class TestQubit(unittest.TestCase):
         probs = qubit._calculate_measurement_probs()
 
         np.testing.assert_equal(
-            np.where(np.isclose(qubit._calculate_measurement_probs(), 1))[0][0],
-            outcome
+            np.where(np.isclose(qubit._calculate_measurement_probs(), 1))[0][0], outcome
         )
+
 
 # class TestAgent(unittest.TestCase):
 #     def test_measurement(self):

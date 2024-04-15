@@ -66,10 +66,10 @@ class QstateUnEnt(QState):
 
         Args:
             qubit_idx (int): Index of the qubit to be measured
-        
+
         Returns:
             Outcome of the measurement. Also collapses the state of the qubit.
-        
+
         """
         if qubit_idx is not None:
             probs_0, probs_1 = self._calculate_measurement_probs(qubit_idx)
@@ -88,14 +88,16 @@ class QstateUnEnt(QState):
 
         Returns:
             Numpy array containing the outcome of all of the measurments.
-        
+
         """
         outcome = []
         for qubit_idx in range(self.num_qubits):
             outcome.append(self.measure(qubit_idx=qubit_idx))
         return np.array(outcome)
 
-    def apply_gate(self, gate: npt.NDArray[np.complex_], qubit_idx: Union[int, list]=None):
+    def apply_gate(
+        self, gate: npt.NDArray[np.complex_], qubit_idx: Union[int, list] = None
+    ):
         """
         Applies a given gate to a subset of qubits, modifying the quantum state.
 
@@ -119,7 +121,7 @@ class QstateUnEnt(QState):
 
         Args:
             qubit_idx (int): Index of qubit
-        
+
         Returns:
             Probabilities of obtaining 0 and 1 if qubit were to be measured
         """
@@ -135,7 +137,7 @@ class QstateUnEnt(QState):
         Args:
             qubit_idx (int): Index of qubit
             outcome (int): Outcome unto which the qubit will be projected
-        
+
         Returns:
             None
         """
@@ -166,6 +168,7 @@ class QstateEnt(QState):
     """
     Representes the state of a set of N qubits which might be entangled.
     """
+
     _state: np.ndarray = None
     num_qubits: int = 10
     init_method: str = "zeros"
@@ -184,8 +187,8 @@ class QstateEnt(QState):
     def _auto_init(self, init_method: str):
         """
         Initializes the quantum state of the system depending on the initialziation method chosen by the user.
-        
-        Args: 
+
+        Args:
             init_method (str): Initialziation method
 
         Returns:
@@ -209,7 +212,7 @@ class QstateEnt(QState):
 
         Args:
             qubit_idx (int): Index identifying the qubit to be measured
-        
+
         Returns:
             Outcome of the measurement, either 0 or 1
         """
@@ -221,13 +224,13 @@ class QstateEnt(QState):
 
     def measure_all(self, order="simult"):
         """
-        Measures all of the qubits 
-        
+        Measures all of the qubits
+
         Args:
             order (str): Specifies the order in which the qubits will be measured.
                 "simult" = all qubits measured simultaneously
                 "sequential" = qubits measured in sequential order (first 0, second 1, etc.)
-        
+
         Returns:
             Outcome of the measurements done. Array of 0's and 1's equal in length to the number of qubits in the system.
         """
@@ -238,7 +241,9 @@ class QstateEnt(QState):
             self._state.fill(0 + 0j)
             self._state[outcome] = 1 + 0j
             outcome_arr = np.array(
-                list("0" * (self.num_qubits - len(bin(outcome)[2:])) + bin(outcome)[2:]),
+                list(
+                    "0" * (self.num_qubits - len(bin(outcome)[2:])) + bin(outcome)[2:]
+                ),
                 dtype=int,
             )
             return outcome_arr
@@ -252,13 +257,13 @@ class QstateEnt(QState):
         else:
             raise ValueError("Order specified not valid.")
 
-    def _calculate_measurement_probs(self, qubit_idx:int=None):
+    def _calculate_measurement_probs(self, qubit_idx: int = None):
         """
         From the probability amplitude, computes the probability that a measurement of a given qubit will give 0 or 1.
 
         Args:
             qubits_idx (int): Index identifying the qubit to be measured
-        
+
         Returns:
             Probability of measuring qubit in position qubit_idx to be measured to be 0 or to be 1
         """
@@ -267,8 +272,10 @@ class QstateEnt(QState):
             return outcome_probs
         else:
             if qubit_idx >= self.num_qubits or qubit_idx < 0:
-                raise ValueError("Invalid qubit index. Make sure it is between 1 and num_qubits - 1")
-            
+                raise ValueError(
+                    "Invalid qubit index. Make sure it is between 1 and num_qubits - 1"
+                )
+
             prob_0 = 0
             prob_1 = 0
             for idx, prob_amp in enumerate(self._state):
@@ -288,7 +295,7 @@ class QstateEnt(QState):
 
         Returns:
             None
-        
+
         """
         new_state = []
         for idx, amplitude in enumerate(self._state):
@@ -318,10 +325,10 @@ class QstateEnt(QState):
 
         Args:
             gate (np.NDarray): Gate to be applied to the to the system
-        
+
         Returns:
             n/a
-        
+
         """
         N = int(np.log2(len(self._state)))
         gate = tensor_power(gate, N)
@@ -346,11 +353,7 @@ class Agent:
     pblc_qbittype: str = None
 
     def __post_init__(self):
-        self.qstates = {
-            "private": None,
-            "public": None
-        }
-
+        self.qstates = {"private": None, "public": None}
 
         if self.priv_qstates is None and self.priv_qbittype == "entangled":
             self.priv_qstates = QstateEnt(
