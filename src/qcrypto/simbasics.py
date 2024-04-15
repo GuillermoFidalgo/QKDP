@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.typing as npt
 import dataclasses
-from qcrypto.gates import *
+from qcrypto.gates import tensor_power
 from typing import Union, Dict
 from abc import ABC, abstractmethod
 
@@ -412,10 +412,6 @@ class Agent:
 
         self.qstates[qstate_type].apply_gate(gate)
 
-<<<<<<< HEAD
-    def get_key(self, qstate_type):
-        return self.measure(qstate_type=qstate_type)
-=======
     # def measure_all(self, qstate_type, order="simult"):
     #     if qstate_type not in self.qstates.keys():
     #         raise ValueError("Invalid qstate type")
@@ -426,4 +422,3 @@ class Agent:
         outcome = self.measure_all(qstate_type=qstate_type, order=order)
         self.keys[qstate_type] = outcome
         return outcome
->>>>>>> a5eef86 (Began making Agent tets compatible with new implem)
