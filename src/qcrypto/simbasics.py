@@ -35,30 +35,30 @@ class QState(ABC):
 
 @dataclasses.dataclass
 class QstateUnEnt(QState):
-    state: np.ndarray = None
+    _state: np.ndarray = None
     num_qubits: int = 10
     init_method: str = "zeros"
 
     def __post_init__(self):
-        if self.state is None:
+        if self._state is None:
             if self.init_method == "zeros":
-                self.state = np.zeros((self.num_qubits, 2), dtype=np.complex_)
-                self.state[:, 0] = 1
+                self._state = np.zeros((self.num_qubits, 2), dtype=np.complex_)
+                self._state[:, 0] = 1
             elif self.init_method == "random":
-                self.state = np.random.random(
+                self._state = np.random.random(
                     (self.num_qubits, 2)
                 ) + 1j * np.random.random((self.num_qubits, 2))
                 self._normalize_state()
             else:
                 raise ValueError("Invalid initialization method.")
         else:
-            if len(self.state) != 2**self.num_qubits:
+            if self._state.shape != (self.num_qubits, 2):
                 raise ValueError(
-                    "State vector size not appropriate for the number of qubits."
+                    "State vector shape not appropriate for the number of qubits."
                 )
             self._normalize_state()
-            self.num_qubits = len(self.state)
-        self.state = np.asarray(self.state, dtype=np.complex_)
+            self.num_qubits = len(self._state)
+        self._state = np.asarray(self._state, dtype=np.complex_)
 
     def measure(self, qubit_idx: int = None) -> int:
         """
@@ -107,11 +107,11 @@ class QstateUnEnt(QState):
             None
         """
         if qubit_idx is not None:
-            self.state[qubit_idx] = np.dot(gate, self.state[qubit_idx])
+            self._state[qubit_idx] = np.dot(gate, self._state[qubit_idx])
         else:
-            reshaped_states = self.state.reshape(self.state.shape[0], 2, 1)
+            reshaped_states = self._state.reshape(self._state.shape[0], 2, 1)
             new_states = np.dot(gate, reshaped_states)
-            self.state = new_states.reshape(self.state.shape)
+            self._state = new_states.reshape(self._state.shape)
 
     def _calculate_measurement_probs(self, qubit_idx: int) -> tuple[int, ...]:
         """
@@ -124,8 +124,8 @@ class QstateUnEnt(QState):
             Probabilities of obtaining 0 and 1 if qubit were to be measured
         """
 
-        prob_0 = np.abs(self.state[qubit_idx, 0]) ** 2
-        prob_1 = np.abs(self.state[qubit_idx, 1]) ** 2
+        prob_0 = np.abs(self._state[qubit_idx, 0]) ** 2
+        prob_1 = np.abs(self._state[qubit_idx, 1]) ** 2
         return prob_0, prob_1
 
     def _update_state_post_measurement(self, qubit_idx: int, outcome: int):
@@ -141,9 +141,9 @@ class QstateUnEnt(QState):
         """
 
         if outcome == 0:
-            self.state[qubit_idx] = np.array([1, 0], dtype=np.complex_)
+            self._state[qubit_idx] = np.array([1, 0], dtype=np.complex_)
         else:
-            self.state[qubit_idx] = np.array([0, 1], dtype=np.complex_)
+            self._state[qubit_idx] = np.array([0, 1], dtype=np.complex_)
 
     def _normalize_state(self):
         """
@@ -156,9 +156,9 @@ class QstateUnEnt(QState):
             None
         """
 
-        norms = np.linalg.norm(self.state, axis=1)
+        norms = np.linalg.norm(self._state, axis=1)
         norms = norms.reshape(-1, 1)
-        self.state = self.state / norms
+        self._state = self._state / norms
 
 
 @dataclasses.dataclass
@@ -167,19 +167,18 @@ class QstateEnt(QState):
     Representes the state of a set of N qubits which might be entangled.
     """
     _state: np.ndarray = None
-    init_nbqubits: int = 10
+    num_qubits: int = 10
     init_method: str = "zeros"
 
     def __post_init__(self):
         if self._state is None:
             self._auto_init(self.init_method)
         else:
-            if len(self._state) != 2**self.init_nbqubits:
+            if len(self._state) != 2**self.num_qubits:
                 raise ValueError(
                     "State vector size not appropriate for the number of qubits specified."
                 )
             self._normalize_state()
-            self.init_nbqubits = len(self._state)
             self._state = np.asarray(self._state, dtype=np.complex_)
 
     def _auto_init(self, init_method: str):
@@ -196,11 +195,11 @@ class QstateEnt(QState):
         if self.init_method not in ["zeros", "random"]:
             raise ValueError("Invalid initialization method.")
         if self.init_method == "zeros":
-            self._state = np.zeros(2**self.init_nbqubits, dtype=np.complex_)
+            self._state = np.zeros(2**self.num_qubits, dtype=np.complex_)
             self._state[0] = 1
         elif self.init_method == "random":
-            self._state = np.random.rand(2**self.init_nbqubits) + 1j * np.random.rand(
-                2**self.init_nbqubits
+            self._state = np.random.rand(2**self.num_qubits) + 1j * np.random.rand(
+                2**self.num_qubits
             )
             self._normalize_state()
 
@@ -234,18 +233,18 @@ class QstateEnt(QState):
         """
         if order == "simult":
             outcome = np.random.choice(
-                np.arange(len(self._state)), p=np.abs(self._state) ** 2
+                np.arange(len(self._state)), p=self._calculate_measurement_probs()
             )
             self._state.fill(0 + 0j)
             self._state[outcome] = 1 + 0j
             outcome_arr = np.array(
-                list("0" * (self.init_nbqubits - len(bin(outcome)[2:])) + bin(outcome)[2:]),
+                list("0" * (self.num_qubits - len(bin(outcome)[2:])) + bin(outcome)[2:]),
                 dtype=int,
             )
             return outcome_arr
         elif order == "sequential":
             outcome = []
-            for i in range(self.init_nbqubits):
+            for i in range(self.num_qubits):
                 outcome.append(self.measure(qubit_idx=i))
             self._update_state_post_measurement
             outcome_arr = np.array(outcome)
@@ -253,7 +252,7 @@ class QstateEnt(QState):
         else:
             raise ValueError("Order specified not valid.")
 
-    def _calculate_measurement_probs(self, qubit_idx: int):
+    def _calculate_measurement_probs(self, qubit_idx:int=None):
         """
         From the probability amplitude, computes the probability that a measurement of a given qubit will give 0 or 1.
 
@@ -263,14 +262,21 @@ class QstateEnt(QState):
         Returns:
             Probability of measuring qubit in position qubit_idx to be measured to be 0 or to be 1
         """
-        prob_0 = 0
-        prob_1 = 0
-        for idx, prob_amp in enumerate(self._state):
-            if (idx >> qubit_idx) & 1 == 0:
-                prob_0 += np.abs(prob_amp) ** 2
-            else:
-                prob_1 += np.abs(prob_amp) ** 2
-        return prob_0, prob_1
+        if qubit_idx is None:
+            outcome_probs = np.abs(self._state) ** 2
+            return outcome_probs
+        else:
+            if qubit_idx >= self.num_qubits or qubit_idx < 0:
+                raise ValueError("Invalid qubit index. Make sure it is between 1 and num_qubits - 1")
+            
+            prob_0 = 0
+            prob_1 = 0
+            for idx, prob_amp in enumerate(self._state):
+                if (idx >> qubit_idx) & 1 == 0:
+                    prob_0 += np.abs(prob_amp) ** 2
+                else:
+                    prob_1 += np.abs(prob_amp) ** 2
+            return prob_0, prob_1
 
     def _update_state_post_measurement(self, qubit_idx, outcome):
         """
@@ -348,7 +354,7 @@ class Agent:
 
         if self.priv_qstates is None and self.priv_qbittype == "entangled":
             self.priv_qstates = QstateEnt(
-                init_nbqubits=self.num_priv_qubits, init_method=self.init_method
+                num_qubits=self.num_priv_qubits, init_method=self.init_method
             )
         elif self.priv_qstates is None and self.priv_qbittype == "unentangled":
             self.priv_qstates = QstateUnEnt(
