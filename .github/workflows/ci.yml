@@ -7,6 +7,36 @@ on:
       - master
 
 jobs:
+
+
+  codespell: 
+    runs-on : ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Codespell with annotations
+        uses: codespell-project/actions-codespell@v2.0
+
+  linter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ricardochaves/python-lint@v1.4.0
+        with:
+          python-root-list: "."
+          use-pylint: true
+          use-pycodestyle: true
+          use-flake8: true
+          use-black: true
+          use-mypy: true
+          use-isort: true
+          extra-pylint-options: ""
+          extra-pycodestyle-options: ""
+          extra-flake8-options: ""
+          extra-black-options: ""
+          extra-mypy-options: ""
+          extra-isort-options: ""
+
   tests:
     runs-on: ubuntu-latest
 
