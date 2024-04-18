@@ -17,7 +17,7 @@ class QState(ABC):
     def apply_gate(
         self,
         gate: npt.NDArray[np.complex_],
-        qubit_idx: Union[int, npt.NDArray[np.int_], None] = None,
+        qubit_idx: Union[int, npt.NDArray[np.int_], list[int], None] = None,
     ) -> None: ...
 
     @abstractmethod
@@ -93,7 +93,7 @@ class QstateUnEnt(QState):
     def apply_gate(
         self,
         gate: npt.NDArray[np.complex_],
-        qubit_idx: Union[int, npt.NDArray[np.int_], None] = None,
+        qubit_idx: Union[int, npt.NDArray[np.int_], list[int], None] = None,
     ) -> None:
         """
         Applies a given gate to a subset of qubits, modifying the quantum state.
@@ -230,7 +230,7 @@ class QstateEnt(QState):
 
     def measure(self, qubit_idx: int) -> int:
         """
-        Measure ths qubit_idx'th qubit, calculating the probability of and, with these, returning 1 or 0.
+        Measure the qubit_idx'th qubit, calculating the probability of each outcome and returning said outcome.
 
         Args:
             qubit_idx (int): Index identifying the qubit to be measured
