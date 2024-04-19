@@ -2,7 +2,7 @@ import numpy as np
 import numpy.typing as npt
 import dataclasses
 from qcrypto.gates import tensor_power
-from typing import Union, Dict, Tuple, Optional
+from typing import Union, Dict, Tuple, Optional, List
 from abc import ABC, abstractmethod
 
 
@@ -17,7 +17,7 @@ class QState(ABC):
     def apply_gate(
         self,
         gate: npt.NDArray[np.complex_],
-        qubit_idx: Union[int, npt.NDArray[np.int_], list[int], None] = None,
+        qubit_idx: Union[int, npt.NDArray[np.int_], List[int], None] = None,
     ) -> None: ...
 
     @abstractmethod
@@ -93,7 +93,7 @@ class QstateUnEnt(QState):
     def apply_gate(
         self,
         gate: npt.NDArray[np.complex_],
-        qubit_idx: Union[int, npt.NDArray[np.int_], list[int], None] = None,
+        qubit_idx: Union[int, npt.NDArray[np.int_], List[int], None] = None,
     ) -> None:
         """
         Applies a given gate to a subset of qubits, modifying the quantum state.
