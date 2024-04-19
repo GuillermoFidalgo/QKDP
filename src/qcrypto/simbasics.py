@@ -1,132 +1,482 @@
 import numpy as np
+import numpy.typing as npt
 import dataclasses
+from qcrypto.gates import tensor_power
+from typing import Union, Dict, Tuple, Optional, List
+from abc import ABC, abstractmethod
+
+
+class QState(ABC):
+    @abstractmethod
+    def measure(self, qubit_idx: int) -> int: ...
+
+    @abstractmethod
+    def measure_all(self) -> npt.NDArray[np.int_]: ...
+
+    @abstractmethod
+    def apply_gate(
+        self,
+        gate: npt.NDArray[np.complex_],
+        qubit_idx: Union[int, npt.NDArray[np.int_], List[int], None] = None,
+    ) -> None: ...
+
+    @abstractmethod
+    def _calculate_measurement_probs(self, qubit_idx: int) -> Tuple[float, float]: ...
+
+    @abstractmethod
+    def _update_state_post_measurement(self, qubit_idx: int, outcome: int) -> None: ...
+
+    @abstractmethod
+    def _normalize_state(self) -> None: ...
 
 
 @dataclasses.dataclass
-class Qubit:
+class QstateUnEnt(QState):
+    _state: Optional[npt.NDArray[np.complex_]] = None
+    num_qubits: int = 10
+    init_method: str = "zeros"
+
+    def __post_init__(self) -> None:
+        if self._state is None:
+            if self.init_method == "zeros":
+                self._state = np.zeros((self.num_qubits, 2), dtype=np.complex_)
+                self._state[:, 0] = 1
+            elif self.init_method == "random":
+                self._state = np.random.random(
+                    (self.num_qubits, 2)
+                ) + 1j * np.random.random((self.num_qubits, 2))
+                self._normalize_state()
+            else:
+                raise ValueError("Invalid initialization method.")
+        else:
+            if self._state.shape != (self.num_qubits, 2):
+                raise ValueError(
+                    "State vector shape not appropriate for the number of qubits."
+                )
+            self._normalize_state()
+            self.num_qubits = len(self._state)
+        self._state = np.asarray(self._state, dtype=np.complex_)
+
+    def measure(self, qubit_idx: int) -> int:
+        """
+        Simulates the measurement of a single qubit. As a result, the state of said qubit is collapsed depending on the result.
+
+        Args:
+            qubit_idx (int): Index of the qubit to be measured
+
+        Returns:
+            Outcome of the measurement. Also collapses the state of the qubit.
+
+        """
+
+        probs_0, probs_1 = self._calculate_measurement_probs(qubit_idx)
+        outcome = np.random.choice([0, 1], p=[probs_0, probs_1])
+        self._update_state_post_measurement(qubit_idx, outcome)
+        return outcome
+
+    def measure_all(self, *args) -> npt.NDArray[np.int_]:
+        """
+        Measures all of the qubits in sequential order.
+
+        Args:
+            n/a
+
+        Returns:
+            Numpy array containing the outcome of all of the measurments.
+
+        """
+        outcome = []
+        for qubit_idx in range(self.num_qubits):
+            outcome.append(self.measure(qubit_idx=qubit_idx))
+        return np.array(outcome)
+
+    def apply_gate(
+        self,
+        gate: npt.NDArray[np.complex_],
+        qubit_idx: Union[int, npt.NDArray[np.int_], List[int], None] = None,
+    ) -> None:
+        """
+        Applies a given gate to a subset of qubits, modifying the quantum state.
+
+        Args:
+            gate (np.array): Gate to be applied. Represented as a numpy matrix
+            qubit_idx (int, list): Index/Indices of qubit/qubits which will be transformed by gate
+
+        Returns:
+            None
+        """
+        if self._state is None:
+            raise ValueError("Error applying gate. State has not been initialized.")
+
+        if qubit_idx is not None:
+
+            self._state[qubit_idx] = np.dot(gate, self._state[qubit_idx])
+        else:
+            reshaped_states = self._state.reshape(self._state.shape[0], 2, 1)
+            new_states = np.dot(gate, reshaped_states)
+            self._state = new_states.reshape(self._state.shape)
+        self._normalize_state()
+
+    def _calculate_measurement_probs(self, qubit_idx: int) -> Tuple[float, float]:
+        """
+        Computes the probability of measuring qubit_idx to be in state 0 or 1 in whatever base its in.
+
+        Args:
+            qubit_idx (int): Index of qubit
+
+        Returns:
+            Probabilities of obtaining 0 and 1 if qubit were to be measured
+        """
+
+        if self._state is None:
+            raise ValueError(
+                "Unable to compute measurement probabilities. State has not been initialized."
+            )
+
+        prob_0 = np.abs(self._state[qubit_idx, 0]) ** 2
+        prob_1 = np.abs(self._state[qubit_idx, 1]) ** 2
+        return prob_0, prob_1
+
+    def _update_state_post_measurement(self, qubit_idx: int, outcome: int) -> None:
+        """
+        Updates the quantum state of a qubit by projecting it unto a given outcome state.
+
+        Args:
+            qubit_idx (int): Index of qubit
+            outcome (int): Outcome unto which the qubit will be projected
+
+        Returns:
+            None
+        """
+
+        if self._state is None:
+            raise ValueError("Unable to update state. State has not been initialized.")
+
+        if outcome == 0:
+            self._state[qubit_idx] = np.array([1, 0], dtype=np.complex_)
+        else:
+            self._state[qubit_idx] = np.array([0, 1], dtype=np.complex_)
+
+    def _normalize_state(self) -> None:
+        """
+        Normalizes the quantum state.
+
+        Args:
+            n/a
+
+        Returns:
+            None
+        """
+
+        if self._state is None:
+            raise ValueError("Error normalizing state. State has not been initialized.")
+
+        norms = np.linalg.norm(self._state, axis=1)
+        norms = norms.reshape(-1, 1)
+        self._state = self._state / norms
+
+
+@dataclasses.dataclass
+class QstateEnt(QState):
     """
-    Data class which represents the qubit and its quantum state.
-    Quantum state is given by:
-    |\psi> = \cos(\frac12 \theta) |0> + e^{i\phi}  \sin(\frac12 \theta) |1>
+    Represents the state of a set of N qubits which might be entangled.
     """
 
-    def __init__(self, theta, base, phi=0):
-        self.base = base
-        self.theta = theta  # Meaningless once projected. FIX
-        self.phi = phi  # Same with this. FIX
-        self.state = np.array([np.cos(theta / 2), np.exp(1j * phi) * np.sin(theta / 2)])
+    _state: Optional[npt.NDArray[np.complex_]] = None
+    num_qubits: int = 10
+    init_method: str = "zeros"
+
+    def __post_init__(self) -> None:
+
+        if self._state is None:
+            self._auto_init()
+        else:
+            if len(self._state) != 2**self.num_qubits:
+                raise ValueError(
+                    "State vector size not appropriate for the number of qubits specified."
+                )
+            self._normalize_state()
+            self._state = np.asarray(self._state, dtype=np.complex_)
+
+    def _auto_init(self) -> None:
+        """
+        Initializes the quantum state of the system depending on the initialziation method chosen by the user.
+
+        Args:
+            init_method (str): Initialziation method
+
+        Returns:
+            None
+
+        """
+        if self.num_qubits is None:
+            raise ValueError("Number of qubits not specified.")
+
+        if self.init_method not in ["zeros", "random"]:
+            raise ValueError(
+                f"""
+                    Invalid intialization method. Got {self.init_method}
+                    expected one of either ['zeros', 'random']
+                    """
+            )
+        if self.init_method == "zeros":
+            self._state = np.zeros(2**self.num_qubits, dtype=np.complex_)
+            self._state[0] = 1
+        elif self.init_method == "random":
+            self._state = np.random.rand(2**self.num_qubits) + 1j * np.random.rand(
+                2**self.num_qubits
+            )
+            self._normalize_state()
+
+    def measure(self, qubit_idx: int) -> int:
+        """
+        Measure the qubit_idx'th qubit, calculating the probability of each outcome and returning said outcome.
+
+        Args:
+            qubit_idx (int): Index identifying the qubit to be measured
+
+        Returns:
+            Outcome of the measurement, either 0 or 1
+        """
+
+        probs_0, probs_1 = self._calculate_measurement_probs(qubit_idx)
+        outcome = np.random.choice([0, 1], p=[probs_0, probs_1])
+        self._update_state_post_measurement(qubit_idx, outcome)
+        return outcome
+
+    def measure_all(self, order: str) -> npt.NDArray[np.int_]:
+        """
+        Measures all of the qubits
+
+        Args:
+            order (str): Specifies the order in which the qubits will be measured.
+                "simult" = all qubits measured simultaneously
+                "sequential" = qubits measured in sequential order (first 0, second 1, etc.)
+
+        Returns:
+            Outcome of the measurements done. Array of 0's and 1's equal in length to the number of qubits in the system.
+        """
+
+        if self._state is None:
+            raise ValueError("Error performing measurements. State is not initialized.")
+
+        if order == "simult":
+            outcome = np.random.choice(
+                np.arange(len(self._state)), p=self._calculate_measurement_probs()
+            )
+            self._state.fill(0 + 0j)
+            self._state[outcome] = 1 + 0j
+            outcome_arr = np.array(
+                list(
+                    "0" * (self.num_qubits - len(bin(outcome)[2:])) + bin(outcome)[2:]
+                ),
+                dtype=np.int_,
+            )
+            return outcome_arr
+        elif order == "sequential":
+            outcome = []
+            for i in range(self.num_qubits):
+                outcome.append(self.measure(qubit_idx=i))
+            self._update_state_post_measurement
+            outcome_arr = np.array(outcome)
+            return outcome_arr
+        else:
+            raise ValueError("Order specified not valid.")
+
+    def _calculate_measurement_probs(self, qubit_idx: Optional[int] = None):
+        """
+        From the probability amplitude, computes the probability that a measurement of a given qubit will give 0 or 1.
+
+        Args:
+            qubits_idx (int): Index identifying the qubit to be measured
+
+        Returns:
+            Probability of measuring qubit in position qubit_idx to be measured to be 0 or to be 1
+        """
+
+        if self._state is None:
+            raise ValueError(
+                "Error calculating measurement probabilities. State has not been initialized."
+            )
+
+        if qubit_idx is None:
+            outcome_probs = np.abs(self._state) ** 2
+            return outcome_probs
+        else:
+            if qubit_idx >= self.num_qubits or qubit_idx < 0:
+                raise ValueError(
+                    "Invalid qubit index. Make sure it is between 1 and num_qubits - 1"
+                )
+
+            prob_0 = 0
+            prob_1 = 0
+            for idx, prob_amp in enumerate(self._state):
+                if (idx >> qubit_idx) & 1 == 0:
+                    prob_0 += np.abs(prob_amp) ** 2
+                else:
+                    prob_1 += np.abs(prob_amp) ** 2
+            return prob_0, prob_1
+
+    def _update_state_post_measurement(self, qubit_idx: int, outcome: int) -> None:
+        """
+        Updates the quantum state post-measurement, effectively collapsing the wave function. based on the result obtained.
+
+        Args:
+            qubit_idx (int): Index identifying qubit which was measured
+            outcome (int): Result of the measurement. Either 0 or 1
+
+        Returns:
+            None
+        """
+
+        if self._state is None:
+            raise ValueError("Error updating state. State has not been initialized.")
+
+        new_state = []
+        for idx, amplitude in enumerate(self._state):
+            if ((idx >> qubit_idx) & 1) == outcome:
+                new_state.append(amplitude)
+            else:
+                new_state.append(0)
+
+        self._state = np.array(new_state)
+        self._normalize_state()
+
+    def _normalize_state(self):
+        """
+        Updates the state of the system by normalizing its states.
+
+        Args:
+            n/a
+
+        Retuns:
+            n/a
+        """
+        self._state /= np.linalg.norm(self._state)
+
+    def apply_gate(self, gate: npt.NDArray[np.complex_]):
+        """
+        Applies quantum gate to the system of qubits.
+
+        Args:
+            gate (np.NDarray): Gate to be applied to the to the system
+
+        Returns:
+            n/a
+
+        """
+
+        if self._state is None:
+            raise ValueError("Error applying gate. State has not been initialized.")
+
+        N = int(np.log2(len(self._state)))
+        gate = tensor_power(gate, N)
+        self._state = np.dot(gate, self._state)
+        self._normalize_state()
 
     def __str__(self):
-        return "{} |0> + {} |1>".format(self.state[0], self.state[1])
+        return str(self._state)
 
     def __repr__(self):
-        return "{} |0> + {} |1>".format(self.state[0], self.state[1])
-
-    def normalize(self):
-        """
-        Nomalizes the qubit's quantum state
-        """
-        norm = np.sqrt(np.dot(np.conjugate(self.state), self.state))
-        self.state /= norm
-
-    def get_probs(self):
-        """
-        Gives the probabilities of getting 0 or 1 when measuring the qubit
-        """
-
-        prob0 = (np.conjugate(self.state[0]) * self.state[0]).real
-        prob1 = (np.conjugate(self.state[1]) * self.state[1]).real
-        return prob0, prob1
-
-    def copy(self):
-        return Qubit(theta=self.theta, base=self.base, phi=self.phi)
+        return str(self._state)
 
 
+@dataclasses.dataclass
 class Agent:
-    """
-    Class representing the players in a quantum cryptography simulation (e.g. Alice, Eve or Bob)
-    """
+    num_priv_qubits: Optional[int] = None
+    qstates: Dict[str, Optional[QState]] = dataclasses.field(
+        default_factory=lambda: {"private": None, "public": None}
+    )
+    keys: Dict[str, Optional[npt.NDArray[np.int_]]] = dataclasses.field(
+        default_factory=lambda: {"private": None, "public": None}
+    )
+    priv_qstates: Union[QstateEnt, QstateUnEnt, None] = None
+    init_method: str = "random"
+    priv_qbittype: Optional[str] = None
 
-    def __init__(self, numqubits=None, basis_selection=None, key=None, message=None):
+    def __post_init__(self) -> None:
         """
+        Initializes the priavate `qstate`.
+
         Args:
-            numqubits: Number of qubits to be used
-            basis_selection: Set of bases to choose from when generating the set of numqubits qubits.
-                If not given, will default to 0 and pi/2.
+            n/a
+
+        Returns:
+            None
         """
-        self.qubits = []
-        self.measurements = []
-        self.key = []
 
-        if numqubits is not None or numqubits != 0:
-            if basis_selection is None:
-                self.basis_selection = [0, np.pi / 4]
-            else:
-                self.basis_selection = basis_selection
+        if self.priv_qstates is None:
+            if self.priv_qbittype == "entangled":
+                self.set_qstate(
+                    QstateEnt(
+                        num_qubits=self.num_priv_qubits, init_method=self.init_method
+                    ),
+                    "private",
+                )
+            elif self.priv_qbittype == "unentangled":
+                self.set_qstate(
+                    QstateUnEnt(
+                        num_qubits=self.num_priv_qubits, init_method=self.init_method
+                    ),
+                    "private",
+                )
+        elif isinstance(self.priv_qstates, (QState)):
+            self.set_qstate(qstate=self.priv_qstates, qstate_type="private")
 
-            qubitbases = np.random.choice(self.basis_selection, numqubits)
-
-            for basis in qubitbases:
-                # theta = 0 -> qubit = 0 state
-                # theta = pi -> qubit = 1 state
-                qubit = Qubit(np.random.choice([0, np.pi]), basis, phi=0)
-                self.qubits.append(qubit)
-
-    def project(self, qubit, base):
+    def set_qstate(
+        self, qstate: Union[QstateEnt, QstateUnEnt], qstate_type: str
+    ) -> None:
         """
-        Projects the given qubit unto the agent's measuring basis
+        Sets a given qstate as either a private or public qubit of the Agent
+
+        Args:
+            qstate (QstateEnt or QstateUnEnt): Quantum state of a private or public system of qubits
+            qstate_type (str): Whether the given qstate is to be private or public
+
+        Returns:
+            None
         """
-        newqubit = qubit
-        base_delta = base - newqubit.base
 
-        # Projection oprator
-        proj_mtrx = np.array(
-            [
-                [np.cos(base_delta), -1 * np.sin(base_delta)],
-                [np.sin(base_delta), np.cos(base_delta)],
-            ]
-        )
+        if not isinstance(qstate, QstateUnEnt) and not isinstance(qstate, QstateEnt):
+            raise ValueError("Wrong type given for system state.")
 
-        newqubit.state = np.dot(proj_mtrx, newqubit.state)
-        newqubit.normalize()
+        self.qstates[qstate_type] = qstate
 
-        newqubit.base = base
-
-        return newqubit
-
-    def measure(self, qubit, base, rtrn_result=True):
+    def measure(self, qstate_type: str, qubit_idx=None) -> int:
         """
-        Gives the result of a sample measurement of the qubit.
+        Measures the
         """
-        self.project(qubit, base)
-        measurement_result = np.random.choice((0, 1), p=qubit.get_probs())
-        self.measurements.append(measurement_result)
-        if rtrn_result:
-            return measurement_result
+        if qstate_type not in self.qstates.keys():
+            raise ValueError("Not valid qstate type.")
 
-    def send_quantum(self, recipient, recipient_bases):
-        # Recipient obtains the qubits from self and measures using given basis
-        for qubit, base in zip(self.qubits, recipient_bases):
-            recipient.measure(qubit.copy(), base)
+        if self.qstates.get(qstate_type) is None:
+            raise ValueError("")
 
-        # Recipient construct qubits based on these measurements and on their own basis selection
-        recipient.qubits = []
-        for base, measurement in zip(recipient_bases, recipient.measurements):
-            received_qubit = Qubit(measurement * np.pi, base)  # measurement = 0 or 1
-            recipient.qubits.append(received_qubit)
-        recipient.qubits = np.array(recipient.qubits)
+        outcome = self.qstates[qstate_type].measure(qubit_idx=qubit_idx)
+        return outcome
 
-    def get_key(self, bases):
-        for qubit, base in zip(self.qubits, bases):
-            measurement = self.measure(qubit, base)
-            self.key.append(measurement)
-        return self.key
+    def measure_all(self, qstate_type: str, order=None) -> npt.NDArray[np.int_]:
 
-    def send_classic(self, receiverAgent, bits):
-        pass
+        if self.qstates[qstate_type] is None:
+            raise ValueError(
+                "Error measuring {} qstate. It has not been initialized.".format(
+                    qstate_type
+                )
+            )
 
-    def genkey(self, numqubits, numcheckbits):
-        """
-        Generates an array of qubits
-        """
-        pass
+        if qstate_type not in self.qstates.keys():
+            raise ValueError("Invalid qstate type")
+
+        outcome = self.qstates[qstate_type].measure_all(order)
+        return outcome
+
+    def apply_gate(self, gate: npt.NDArray[np.complex_], qstate_type: str) -> None:
+        if qstate_type not in self.qstates.keys():
+            raise ValueError("Invalid qstate type")
+
+        self.qstates[qstate_type].apply_gate(gate)
+
+    def get_key(self, qstate_type: str, order=None) -> npt.NDArray[np.int_]:
+        outcome = self.measure_all(qstate_type=qstate_type, order=order)
+        self.keys[qstate_type] = outcome
+        return outcome
