@@ -4,3 +4,7 @@
 src/qcrypto/__pycache__/
 tests/__pycache__/
 dist
+.coverage
+htmlcov
+*.pyc
+settings.json
