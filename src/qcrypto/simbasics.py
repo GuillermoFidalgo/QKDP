@@ -494,12 +494,12 @@ class Agent:
 
         return self.qstates[qstate_type].measure_all(order)
 
-    def apply_gate(self, gate: npt.NDArray[np.complex128], qstate_type: str) -> None:
+    def apply_gate(self, gate: npt.NDArray[np.complex128], qstate_type: str, qubit_idx: int | None = None) -> None:
         if qstate_type not in self.qstates:
             msg = "Invalid qstate type"
             raise ValueError(msg)
 
-        self.qstates[qstate_type].apply_gate(gate)
+        self.qstates[qstate_type].apply_gate(gate, qubit_idx=qubit_idx)
 
     def get_key(self, qstate_type: str, order: Any = None) -> npt.NDArray[np.int_]:
         outcome = self.measure_all(qstate_type=qstate_type, order=order)
