@@ -1,9 +1,13 @@
+from __future__ import annotations
+
+import dataclasses
+from abc import ABC, abstractmethod
+from typing import Dict, List, Optional, Tuple, Union
+
 import numpy as np
 import numpy.typing as npt
-import dataclasses
+
 from qcrypto.gates import tensor_power
-from typing import Union, Dict, Tuple, Optional, List
-from abc import ABC, abstractmethod
 
 
 class QState(ABC):
@@ -16,7 +20,7 @@ class QState(ABC):
     @abstractmethod
     def apply_gate(
         self,
-        gate: npt.NDArray[np.complex_],
+        gate: npt.NDArray[np.complex128],
         qubit_idx: Union[int, npt.NDArray[np.int_], List[int], None] = None,
     ) -> None: ...
 
@@ -32,14 +36,14 @@ class QState(ABC):
 
 @dataclasses.dataclass
 class QstateUnEnt(QState):
-    _state: Optional[npt.NDArray[np.complex_]] = None
+    _state: Optional[npt.NDArray[np.complex128]] = None
     num_qubits: int = 10
     init_method: str = "zeros"
 
     def __post_init__(self) -> None:
         if self._state is None:
             if self.init_method == "zeros":
-                self._state = np.zeros((self.num_qubits, 2), dtype=np.complex_)
+                self._state = np.zeros((self.num_qubits, 2), dtype=np.complex128)
                 self._state[:, 0] = 1
             elif self.init_method == "random":
                 self._state = np.random.random(
@@ -55,7 +59,7 @@ class QstateUnEnt(QState):
                 )
             self._normalize_state()
             self.num_qubits = len(self._state)
-        self._state = np.asarray(self._state, dtype=np.complex_)
+        self._state = np.asarray(self._state, dtype=np.complex128)
 
     def measure(self, qubit_idx: int) -> int:
         """
@@ -92,7 +96,7 @@ class QstateUnEnt(QState):
 
     def apply_gate(
         self,
-        gate: npt.NDArray[np.complex_],
+        gate: npt.NDArray[np.complex128],
         qubit_idx: Union[int, npt.NDArray[np.int_], List[int], None] = None,
     ) -> None:
         """
@@ -153,9 +157,9 @@ class QstateUnEnt(QState):
             raise ValueError("Unable to update state. State has not been initialized.")
 
         if outcome == 0:
-            self._state[qubit_idx] = np.array([1, 0], dtype=np.complex_)
+            self._state[qubit_idx] = np.array([1, 0], dtype=np.complex128)
         else:
-            self._state[qubit_idx] = np.array([0, 1], dtype=np.complex_)
+            self._state[qubit_idx] = np.array([0, 1], dtype=np.complex128)
 
     def _normalize_state(self) -> None:
         """
@@ -182,7 +186,7 @@ class QstateEnt(QState):
     Represents the state of a set of N qubits which might be entangled.
     """
 
-    _state: Optional[npt.NDArray[np.complex_]] = None
+    _state: Optional[npt.NDArray[np.complex128]] = None
     num_qubits: int = 10
     init_method: str = "zeros"
 
@@ -196,7 +200,7 @@ class QstateEnt(QState):
                     "State vector size not appropriate for the number of qubits specified."
                 )
             self._normalize_state()
-            self._state = np.asarray(self._state, dtype=np.complex_)
+            self._state = np.asarray(self._state, dtype=np.complex128)
 
     def _auto_init(self) -> None:
         """
@@ -220,7 +224,7 @@ class QstateEnt(QState):
                     """
             )
         if self.init_method == "zeros":
-            self._state = np.zeros(2**self.num_qubits, dtype=np.complex_)
+            self._state = np.zeros(2**self.num_qubits, dtype=np.complex128)
             self._state[0] = 1
         elif self.init_method == "random":
             self._state = np.random.rand(2**self.num_qubits) + 1j * np.random.rand(
@@ -354,7 +358,7 @@ class QstateEnt(QState):
         """
         self._state /= np.linalg.norm(self._state)
 
-    def apply_gate(self, gate: npt.NDArray[np.complex_]):
+    def apply_gate(self, gate: npt.NDArray[np.complex128]):
         """
         Applies quantum gate to the system of qubits.
 
@@ -459,9 +463,7 @@ class Agent:
 
         if self.qstates[qstate_type] is None:
             raise ValueError(
-                "Error measuring {} qstate. It has not been initialized.".format(
-                    qstate_type
-                )
+                f"Error measuring {qstate_type} qstate. It has not been initialized."
             )
 
         if qstate_type not in self.qstates.keys():
@@ -470,7 +472,7 @@ class Agent:
         outcome = self.qstates[qstate_type].measure_all(order)
         return outcome
 
-    def apply_gate(self, gate: npt.NDArray[np.complex_], qstate_type: str) -> None:
+    def apply_gate(self, gate: npt.NDArray[np.complex128], qstate_type: str) -> None:
         if qstate_type not in self.qstates.keys():
             raise ValueError("Invalid qstate type")
 

@@ -1,19 +1,22 @@
-import numpy as np
-import numpy.typing as npt
+from __future__ import annotations
+
 from typing import Dict
 
-Pauli: Dict[str, npt.NDArray[np.complex_]] = {
-    "x": np.array([[0, 1], [1, 0]], dtype=np.complex_),
-    "y": np.array([[0, -1j], [1j, 0]], dtype=np.complex_),
-    "z": np.array([[1, 0], [0, -1]], dtype=np.complex_),
+import numpy as np
+import numpy.typing as npt
+
+Pauli: Dict[str, npt.NDArray[np.complex128]] = {
+    "x": np.array([[0, 1], [1, 0]], dtype=np.complex128),
+    "y": np.array([[0, -1j], [1j, 0]], dtype=np.complex128),
+    "z": np.array([[1, 0], [0, -1]], dtype=np.complex128),
 }
 
-H_gate: npt.NDArray[np.complex_] = (1 / np.sqrt(2)) * np.array(
-    [[1, 1], [1, -1]], dtype=np.complex_
+H_gate: npt.NDArray[np.complex128] = (1 / np.sqrt(2)) * np.array(
+    [[1, 1], [1, -1]], dtype=np.complex128
 )
 
 
-def Phase_shift(phase: float) -> npt.NDArray[np.complex_]:
+def Phase_shift(phase: float) -> npt.NDArray[np.complex128]:
     """Generates a phase shift gate for a given phase.
 
     Args:
@@ -26,7 +29,7 @@ def Phase_shift(phase: float) -> npt.NDArray[np.complex_]:
     return phase_shift_gate
 
 
-def tensor_power(gate: npt.NDArray[np.complex_], N: int) -> npt.NDArray[np.complex_]:
+def tensor_power(gate: npt.NDArray[np.complex128], N: int) -> npt.NDArray[np.complex128]:
     """Computes the tensor power of a 2x2 gate matrix.
 
     Args:

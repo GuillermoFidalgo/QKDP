@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import unittest
-from qcrypto.simbasics import QstateUnEnt, QstateEnt, Agent
-from qcrypto.gates import H_gate
+
 import numpy as np
+
+from qcrypto.gates import H_gate
+from qcrypto.simbasics import Agent, QstateEnt, QstateUnEnt
 
 
 class TestQubit(unittest.TestCase):
@@ -10,7 +14,7 @@ class TestQubit(unittest.TestCase):
         Test case to verify the correct initialization of a QstateUnEnt object with specified state.
         """
         qubit = QstateUnEnt(num_qubits=2, init_method="zeros")
-        expected_state = np.complex_(np.array([[1, 0], [1, 0]]))
+        expected_state = np.complex128(np.array([[1, 0], [1, 0]]))
         np.testing.assert_array_almost_equal(qubit._state, expected_state)
 
     def test_initialization_ent_zeros(self):
@@ -18,7 +22,7 @@ class TestQubit(unittest.TestCase):
         Test case to verify the correct initialization of a QstateEnt object with specified state.
         """
         qubit = QstateEnt(num_qubits=2, init_method="zeros")
-        expected_state = np.complex_(np.array([1, 0, 0, 0]))
+        expected_state = np.complex128(np.array([1, 0, 0, 0]))
         np.testing.assert_array_almost_equal(qubit._state, expected_state)
 
     def test_normalization_unent(self):
@@ -36,7 +40,7 @@ class TestQubit(unittest.TestCase):
         """
         Test case to verify the normalization of a QstateEnt object.
         """
-        state = np.complex_(np.array([1, 2, 3, 4]))
+        state = np.complex128(np.array([1, 2, 3, 4]))
         qubit = QstateEnt(num_qubits=2, _state=state.copy())
         expected_state = state / np.linalg.norm(state)
         np.testing.assert_array_almost_equal(qubit._state, expected_state)
@@ -45,13 +49,13 @@ class TestQubit(unittest.TestCase):
         """
         Test case to verify the probability calculation of a QstateEnt object.
         """
-        state0 = np.complex_(np.array([[1, 0]]))
+        state0 = np.complex128(np.array([[1, 0]]))
         qubit = QstateUnEnt(num_qubits=1, _state=state0)
         probs = qubit._calculate_measurement_probs(qubit_idx=0)
         self.assertAlmostEqual(probs[0], 1, places=7)
         self.assertAlmostEqual(probs[1], 0, places=7)
 
-        state1 = np.complex_(np.array([[0, 1]]))
+        state1 = np.complex128(np.array([[0, 1]]))
         qubit = QstateUnEnt(num_qubits=1, _state=state1)  # Should be |1> state
         probs = qubit._calculate_measurement_probs(qubit_idx=0)
         self.assertAlmostEqual(probs[0], 0, places=7)
@@ -64,7 +68,7 @@ class TestQubit(unittest.TestCase):
         bin_outcome = "1010"
         outcome = int(bin_outcome, 2)  # 10
         num_qubits = 4
-        state = np.complex_(np.zeros(2**num_qubits))
+        state = np.complex128(np.zeros(2**num_qubits))
         state[outcome] = 1 + 0j
         qubit = QstateEnt(num_qubits=num_qubits, _state=state)
         probs = qubit._calculate_measurement_probs()
