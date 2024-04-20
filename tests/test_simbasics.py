@@ -3,7 +3,6 @@ from __future__ import annotations
 import unittest
 
 import numpy as np
-
 from qcrypto.gates import H_gate
 from qcrypto.simbasics import Agent, QstateEnt, QstateUnEnt
 
