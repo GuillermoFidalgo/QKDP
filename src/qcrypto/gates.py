@@ -29,7 +29,9 @@ def Phase_shift(phase: float) -> npt.NDArray[np.complex128]:
     return phase_shift_gate
 
 
-def tensor_power(gate: npt.NDArray[np.complex128], N: int) -> npt.NDArray[np.complex128]:
+def tensor_power(
+    gate: npt.NDArray[np.complex128], N: int
+) -> npt.NDArray[np.complex128]:
     """Computes the tensor power of a 2x2 gate matrix.
 
     Args:
