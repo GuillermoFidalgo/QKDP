@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from typing import Dict
-
 import numpy as np
 import numpy.typing as npt
 
-Pauli: Dict[str, npt.NDArray[np.complex128]] = {
+Pauli: dict[str, npt.NDArray[np.complex128]] = {
     "x": np.array([[0, 1], [1, 0]], dtype=np.complex128),
     "y": np.array([[0, -1j], [1j, 0]], dtype=np.complex128),
     "z": np.array([[1, 0], [0, -1]], dtype=np.complex128),
@@ -25,8 +23,8 @@ def Phase_shift(phase: float) -> npt.NDArray[np.complex128]:
     Returns:
         NDArray: A 2x2 numpy array representing the phase shift gate.
     """
-    phase_shift_gate = np.array([1, 0], [0, np.e ** (1j * phase)])
-    return phase_shift_gate
+
+    return np.array([1, 0], [0, np.e ** (1j * phase)])
 
 
 def tensor_power(

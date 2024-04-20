@@ -21,24 +21,24 @@ repos:
       - id: black
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.3.7"
+    rev: "v0.4.1"
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes"]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: "v2.2.5"
+    rev: "v2.2.6"
     hooks:
       - id: codespell
         args: ["src/*"]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.5.1"
+    rev: "v1.9.0"
     hooks:
       - id: mypy
         files: src
         args: ["--strict"]
   - repo: https://github.com/kynan/nbstripout
-    rev: "0.6.1"
+    rev: "0.7.1"
     hooks:
       - id: nbstripout
