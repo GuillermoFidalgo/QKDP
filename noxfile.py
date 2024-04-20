@@ -9,6 +9,7 @@ def tests(session: nox.Session) -> None:
     session.install(".[tests]")
     session.run("pytest", *session.posargs)
 
+
 @nox.session
 def coverage_pytest(session: nox.Session) -> None:
     """
@@ -18,6 +19,7 @@ def coverage_pytest(session: nox.Session) -> None:
     session.run("coverage", "run", "-m", "pytest", "-vv")
     session.run("coverage", "report", "-m")
     session.run("coverage", "html")
+
 
 @nox.session
 def coverage_unittest(session: nox.Session) -> None:
