@@ -115,12 +115,13 @@ class QstateUnEnt(QState):
             raise ValueError(msg)
 
         if qubit_idx is not None:
-
-            self._state[qubit_idx] = np.dot(gate, self._state[qubit_idx])
+            if isinstance(qubit_idx, (list, np.ndarray)):
+                for idx in qubit_idx:
+                    self._state[idx] = np.dot(gate, self._state[idx])
+            else:
+                self._state[qubit_idx] = np.dot(gate, self._state[qubit_idx])
         else:
-            reshaped_states = self._state.reshape(self._state.shape[0], 2, 1)
-            new_states = np.dot(gate, reshaped_states)
-            self._state = new_states.reshape(self._state.shape)
+            self._state = np.dot(self._state, gate.T)
         self._normalize_state()
 
     def _calculate_measurement_probs(self, qubit_idx: int) -> tuple[float, float]:
@@ -181,6 +182,12 @@ class QstateUnEnt(QState):
         norms = np.linalg.norm(self._state, axis=1)
         norms = norms.reshape(-1, 1)
         self._state = self._state / norms
+
+    def __str__(self):
+        return str(self._state)
+
+    def __repr__(self):
+        return str(self._state)
 
 
 @dataclasses.dataclass
