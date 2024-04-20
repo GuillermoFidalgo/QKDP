@@ -499,7 +499,10 @@ class Agent:
             msg = "Invalid qstate type"
             raise ValueError(msg)
 
-        self.qstates[qstate_type].apply_gate(gate, qubit_idx=qubit_idx)
+        if isinstance(self.qstates[qstate_type], QstateUnEnt):
+            self.qstates[qstate_type].apply_gate(gate, qubit_idx=qubit_idx)
+        elif isinstance(self.qstates[qstate_type], QstateUnEnt):
+            self.qstates[qstate_type].apply_gate(gate, qubit_idx=qubit_idx)
 
     def get_key(self, qstate_type: str, order: Any = None) -> npt.NDArray[np.int_]:
         outcome = self.measure_all(qstate_type=qstate_type, order=order)
