@@ -39,7 +39,7 @@ class QstateUnEnt(QState):
     _state: npt.NDArray[np.complex128] | None = None
     num_qubits: int = 10
     init_method: str = "zeros"
-    rng: np.random.Generator = np.random.default_rng
+    rng: np.random.Generator = np.random.default_rng()
 
     def __post_init__(self) -> None:
         if self._state is None:
@@ -192,7 +192,7 @@ class QstateEnt(QState):
     _state: npt.NDArray[np.complex128] | None = None
     num_qubits: int = 10
     init_method: str = "zeros"
-    rng: np.random.Generator = np.random.default_rng
+    rng: np.random.Generator = np.random.default_rng()
 
     def __post_init__(self) -> None:
 
