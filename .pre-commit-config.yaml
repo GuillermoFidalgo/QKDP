@@ -30,7 +30,9 @@ repos:
     rev: "v2.2.6"
     hooks:
       - id: codespell
-        args: ["src/*"]
+        args: ["src/", "notebooks/"]
+        additional_dependencies:
+          - tomli
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: "v1.9.0"

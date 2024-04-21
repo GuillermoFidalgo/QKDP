@@ -3,8 +3,9 @@ from __future__ import annotations
 import unittest
 
 import numpy as np
+from qcrypto.agents import Agent
 from qcrypto.gates import H_gate
-from qcrypto.simbasics import Agent, QstateEnt, QstateUnEnt
+from qcrypto.qstates import QstateEnt, QstateUnEnt
 
 
 class TestQubit(unittest.TestCase):
