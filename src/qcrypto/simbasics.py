@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, Optional, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -21,11 +21,11 @@ class QState(ABC):
     def apply_gate(
         self,
         gate: npt.NDArray[np.complex128],
-        qubit_idx: Union[int, npt.NDArray[np.int_], List[int], None] = None,
+        qubit_idx: int | npt.NDArray[np.int_] | list[int] | None = None,
     ) -> None: ...
 
     @abstractmethod
-    def _calculate_measurement_probs(self, qubit_idx: int) -> Tuple[float, float]: ...
+    def _calculate_measurement_probs(self, qubit_idx: int) -> tuple[float, float]: ...
 
     @abstractmethod
     def _update_state_post_measurement(self, qubit_idx: int, outcome: int) -> None: ...
@@ -36,9 +36,10 @@ class QState(ABC):
 
 @dataclasses.dataclass
 class QstateUnEnt(QState):
-    _state: Optional[npt.NDArray[np.complex128]] = None
+    _state: npt.NDArray[np.complex128] | None = None
     num_qubits: int = 10
     init_method: str = "zeros"
+    rng: np.random.Generator = np.random.default_rng
 
     def __post_init__(self) -> None:
         if self._state is None:
@@ -46,17 +47,17 @@ class QstateUnEnt(QState):
                 self._state = np.zeros((self.num_qubits, 2), dtype=np.complex128)
                 self._state[:, 0] = 1
             elif self.init_method == "random":
-                self._state = np.random.random(
+                self._state = self.rng.random(
                     (self.num_qubits, 2)
-                ) + 1j * np.random.random((self.num_qubits, 2))
+                ) + 1j * self.rng.random((self.num_qubits, 2))
                 self._normalize_state()
             else:
-                raise ValueError("Invalid initialization method.")
+                msg = f"{self.init_method = } Invalid initialization method."
+                raise ValueError(msg)
         else:
             if self._state.shape != (self.num_qubits, 2):
-                raise ValueError(
-                    "State vector shape not appropriate for the number of qubits."
-                )
+                msg = f"Got {self._state.shape = }. State vector shape not appropriate for the number of qubits."
+                raise ValueError(msg)
             self._normalize_state()
             self.num_qubits = len(self._state)
         self._state = np.asarray(self._state, dtype=np.complex128)
@@ -74,7 +75,7 @@ class QstateUnEnt(QState):
         """
 
         probs_0, probs_1 = self._calculate_measurement_probs(qubit_idx)
-        outcome = np.random.choice([0, 1], p=[probs_0, probs_1])
+        outcome = self.rng.choice([0, 1], p=[probs_0, probs_1])
         self._update_state_post_measurement(qubit_idx, outcome)
         return outcome
 
@@ -86,7 +87,7 @@ class QstateUnEnt(QState):
             n/a
 
         Returns:
-            Numpy array containing the outcome of all of the measurments.
+            Numpy array containing the outcome of all of the measurements.
 
         """
         outcome = []
@@ -97,7 +98,7 @@ class QstateUnEnt(QState):
     def apply_gate(
         self,
         gate: npt.NDArray[np.complex128],
-        qubit_idx: Union[int, npt.NDArray[np.int_], List[int], None] = None,
+        qubit_idx: int | npt.NDArray[np.int_] | list[int] | None = None,
     ) -> None:
         """
         Applies a given gate to a subset of qubits, modifying the quantum state.
@@ -110,7 +111,8 @@ class QstateUnEnt(QState):
             None
         """
         if self._state is None:
-            raise ValueError("Error applying gate. State has not been initialized.")
+            msg = "Error applying gate. State has not been initialized."
+            raise ValueError(msg)
 
         if qubit_idx is not None:
 
@@ -121,7 +123,7 @@ class QstateUnEnt(QState):
             self._state = new_states.reshape(self._state.shape)
         self._normalize_state()
 
-    def _calculate_measurement_probs(self, qubit_idx: int) -> Tuple[float, float]:
+    def _calculate_measurement_probs(self, qubit_idx: int) -> tuple[float, float]:
         """
         Computes the probability of measuring qubit_idx to be in state 0 or 1 in whatever base its in.
 
@@ -133,9 +135,8 @@ class QstateUnEnt(QState):
         """
 
         if self._state is None:
-            raise ValueError(
-                "Unable to compute measurement probabilities. State has not been initialized."
-            )
+            msg = "Unable to compute measurement probabilities. State has not been initialized."
+            raise ValueError(msg)
 
         prob_0 = np.abs(self._state[qubit_idx, 0]) ** 2
         prob_1 = np.abs(self._state[qubit_idx, 1]) ** 2
@@ -154,7 +155,8 @@ class QstateUnEnt(QState):
         """
 
         if self._state is None:
-            raise ValueError("Unable to update state. State has not been initialized.")
+            msg = "Unable to update state. State has not been initialized."
+            raise ValueError(msg)
 
         if outcome == 0:
             self._state[qubit_idx] = np.array([1, 0], dtype=np.complex128)
@@ -173,7 +175,8 @@ class QstateUnEnt(QState):
         """
 
         if self._state is None:
-            raise ValueError("Error normalizing state. State has not been initialized.")
+            msg = "Error normalizing state. State has not been initialized."
+            raise ValueError(msg)
 
         norms = np.linalg.norm(self._state, axis=1)
         norms = norms.reshape(-1, 1)
@@ -186,9 +189,10 @@ class QstateEnt(QState):
     Represents the state of a set of N qubits which might be entangled.
     """
 
-    _state: Optional[npt.NDArray[np.complex128]] = None
+    _state: npt.NDArray[np.complex128] | None = None
     num_qubits: int = 10
     init_method: str = "zeros"
+    rng: np.random.Generator = np.random.default_rng
 
     def __post_init__(self) -> None:
 
@@ -196,9 +200,8 @@ class QstateEnt(QState):
             self._auto_init()
         else:
             if len(self._state) != 2**self.num_qubits:
-                raise ValueError(
-                    "State vector size not appropriate for the number of qubits specified."
-                )
+                msg = f"Got {len(self._state) =}. State vector size not appropriate for the number of qubits specified. Expected {2**self.num_qubits = }"
+                raise ValueError(msg)
             self._normalize_state()
             self._state = np.asarray(self._state, dtype=np.complex128)
 
@@ -214,20 +217,20 @@ class QstateEnt(QState):
 
         """
         if self.num_qubits is None:
-            raise ValueError("Number of qubits not specified.")
+            msg = "Number of qubits not specified."
+            raise ValueError(msg)
 
         if self.init_method not in ["zeros", "random"]:
-            raise ValueError(
-                f"""
-                    Invalid intialization method. Got {self.init_method}
+            msg = f"""
+                    Invalid initialization method. Got {self.init_method}
                     expected one of either ['zeros', 'random']
                     """
-            )
+            raise ValueError(msg)
         if self.init_method == "zeros":
             self._state = np.zeros(2**self.num_qubits, dtype=np.complex128)
             self._state[0] = 1
         elif self.init_method == "random":
-            self._state = np.random.rand(2**self.num_qubits) + 1j * np.random.rand(
+            self._state = self.rng.rand(2**self.num_qubits) + 1j * self.rng.rand(
                 2**self.num_qubits
             )
             self._normalize_state()
@@ -244,7 +247,7 @@ class QstateEnt(QState):
         """
 
         probs_0, probs_1 = self._calculate_measurement_probs(qubit_idx)
-        outcome = np.random.choice([0, 1], p=[probs_0, probs_1])
+        outcome = self.rng.choice([0, 1], p=[probs_0, probs_1])
         self._update_state_post_measurement(qubit_idx, outcome)
         return outcome
 
@@ -262,30 +265,34 @@ class QstateEnt(QState):
         """
 
         if self._state is None:
-            raise ValueError("Error performing measurements. State is not initialized.")
+            msg = "Error performing measurements. State is not initialized."
+            raise ValueError(msg)
 
         if order == "simult":
-            outcome = np.random.choice(
+            outcome = self.rng.choice(
                 np.arange(len(self._state)), p=self._calculate_measurement_probs()
             )
             self._state.fill(0 + 0j)
             self._state[outcome] = 1 + 0j
+
             outcome_arr = np.array(
                 list(
                     "0" * (self.num_qubits - len(bin(outcome)[2:])) + bin(outcome)[2:]
                 ),
                 dtype=np.int_,
             )
-            return outcome_arr
         elif order == "sequential":
             outcome = []
             for i in range(self.num_qubits):
                 outcome.append(self.measure(qubit_idx=i))
             self._update_state_post_measurement
             outcome_arr = np.array(outcome)
-            return outcome_arr
+
         else:
-            raise ValueError("Order specified not valid.")
+            msg = f"Got {order =}. Expected one of either 'simult' or 'sequential'. Order specified not valid."
+            raise ValueError(msg)
+
+        return outcome_arr
 
     def _calculate_measurement_probs(self, qubit_idx: Optional[int] = None):
         """
@@ -353,7 +360,7 @@ class QstateEnt(QState):
         Args:
             n/a
 
-        Retuns:
+        Returns:
             n/a
         """
         self._state /= np.linalg.norm(self._state)
