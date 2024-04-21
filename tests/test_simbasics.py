@@ -147,7 +147,3 @@ class TestAgent(unittest.TestCase):
         Bob.get_key(qstate_type="public", order="sequential")
 
         np.testing.assert_array_almost_equal(Alice.keys["public"], Bob.keys["public"])
-
-
-if __name__ == "__main__":
-    unittest.main()

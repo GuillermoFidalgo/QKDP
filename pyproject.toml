@@ -39,8 +39,8 @@ lint.select = [
   "G",           # flake8-logging-format
   "PGH",         # pygrep-hooks
   "PIE",         # flake8-pie
-  "PT",          # flake8-pytest-style
-  "PTH",         # flake8-use-pathlib
+  # "PT",          # flake8-pytest-style
+  # "PTH",         # flake8-use-pathlib
   "RET",         # flake8-return
   "RUF",         # Ruff-specific
   "SIM",         # flake8-simplify
@@ -72,7 +72,7 @@ lint.isort.required-imports = ["from __future__ import annotations"]
 
 [tool.mypy]
 files = "src"
-python_version = "3.9"
+python_version = "3.12"
 strict = true
 show_error_codes = true
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
