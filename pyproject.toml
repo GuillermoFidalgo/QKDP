@@ -25,3 +25,61 @@ tests = [
 
 [project.urls]
 Homepage = "https://github.com/GuillermoFidalgo/QKDP"
+
+[tool.ruff]
+lint.select = [
+  "E", "F", "W", # flake8
+  "B",           # flake8-bugbear
+  "I",           # isort
+  "ARG",         # flake8-unused-arguments
+  "C4",          # flake8-comprehensions
+  "EM",          # flake8-errmsg
+  "ICN",         # flake8-import-conventions
+  "ISC",         # flake8-implicit-str-concat
+  "G",           # flake8-logging-format
+  "PGH",         # pygrep-hooks
+  "PIE",         # flake8-pie
+  # "PT",          # flake8-pytest-style
+  # "PTH",         # flake8-use-pathlib
+  "RET",         # flake8-return
+  "RUF",         # Ruff-specific
+  "SIM",         # flake8-simplify
+  "T20",         # flake8-print
+  "UP",          # pyupgrade
+  "YTT",         # flake8-2020
+  "EXE",         # flake8-executable
+  "NPY",         # NumPy specific rules
+  "PD",          # pandas-vet
+]
+lint.extend-ignore = [
+  "PLR",    # Design related pylint codes
+  "E501",   # Line too long
+  "PT004",  # Use underscore for non-returning fixture (use usefixture instead)
+]
+lint.typing-modules = ["mypackage._compat.typing"]
+src = ["src/qcrypto"]
+lint.unfixable = [
+  "T20",  # Removes print statements
+  "F841", # Removes unused variables
+]
+exclude = []
+lint.flake8-unused-arguments.ignore-variadic-names = true
+lint.isort.required-imports = ["from __future__ import annotations"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["T20"]
+
+
+[tool.mypy]
+files = "src"
+python_version = "3.12"
+strict = true
+show_error_codes = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+warn_unreachable = true
+
+
+# You can disable imports or control per-module/file settings here
+[[tool.mypy.overrides]]
+module = [ "numpy.*", ]
+ignore_missing_imports = true
