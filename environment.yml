@@ -15,4 +15,3 @@ dependencies:
   - line_profiler
   - rich
   - scipy
-
