@@ -64,14 +64,13 @@ class Agent:
         """
 
         # if not isinstance(qstate, QstateUnEnt) and not isinstance(qstate, QstateEnt):
-            # msg = f"Got {type(qstate) = }. Expected either 'QstateUnEnt' | 'QstateEnt'.  Wrong type given for system state."
-            # raise ValueError(msg)
-        if (qstate_type == "public" ) or (qstate_type == 'private'):
+        # msg = f"Got {type(qstate) = }. Expected either 'QstateUnEnt' | 'QstateEnt'.  Wrong type given for system state."
+        # raise ValueError(msg)
+        if (qstate_type == "public") or (qstate_type == "private"):
             self.qstates[qstate_type] = qstate
-        else:    
+        else:
             msg = f"Got {qstate_type = }. Expected either 'public' | 'private'.  Wrong string given for qstate type."
             raise ValueError(msg)
-
 
     def measure(self, qstate_type: str, qubit_idx: int) -> int:
         """
