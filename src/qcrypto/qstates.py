@@ -39,7 +39,7 @@ class QstateUnEnt(QState):
     _state: npt.NDArray[np.complex128] | None = None
     num_qubits: int = 10
     init_method: str = "zeros"
-    rng: np.random.Generator = np.random.default_rng
+    rng: np.random.Generator = dataclasses.field(default_factory=np.random.default_rng)
 
     def __post_init__(self) -> None:
         if self._state is None:
@@ -47,9 +47,9 @@ class QstateUnEnt(QState):
                 self._state = np.zeros((self.num_qubits, 2), dtype=np.complex128)
                 self._state[:, 0] = 1
             elif self.init_method == "random":
-                self._state = self.rng().random(
+                self._state = self.rng.random(
                     (self.num_qubits, 2)
-                ) + 1j * self.rng().random((self.num_qubits, 2))
+                ) + 1j * self.rng.random((self.num_qubits, 2))
                 self._normalize_state()
             else:
                 msg = f"{self.init_method = } Invalid initialization method."
@@ -75,7 +75,7 @@ class QstateUnEnt(QState):
         """
 
         probs_0, probs_1 = self._calculate_measurement_probs(qubit_idx)
-        outcome: int = self.rng().choice([0, 1], p=[probs_0, probs_1])
+        outcome: int = self.rng.choice([0, 1], p=[probs_0, probs_1])
         self._update_state_post_measurement(qubit_idx, outcome)
         return outcome
 
@@ -199,7 +199,7 @@ class QstateEnt(QState):
     _state: npt.NDArray[np.complex128] | None = None
     num_qubits: int = 10
     init_method: str = "zeros"
-    rng: np.random.Generator = np.random.default_rng
+    rng: np.random.Generator = dataclasses.field(default_factory=np.random.default_rng)
 
     def __post_init__(self) -> None:
 
@@ -234,9 +234,9 @@ class QstateEnt(QState):
             self._state = np.zeros(2**self.num_qubits, dtype=np.complex128)
             self._state[0] = 1
         elif self.init_method == "random":
-            self._state = self.rng().random(
+            self._state = self.rng.random(2**self.num_qubits) + 1j * self.rng.random(
                 2**self.num_qubits
-            ) + 1j * self.rng().random(2**self.num_qubits)
+            )
             self._normalize_state()
 
     def measure(self, qubit_idx: int) -> int:
@@ -251,7 +251,7 @@ class QstateEnt(QState):
         """
 
         probs_0, probs_1 = self._calculate_measurement_probs(qubit_idx)
-        outcome: int = self.rng().choice([0, 1], p=[probs_0, probs_1])
+        outcome: int = self.rng.choice([0, 1], p=[probs_0, probs_1])
         self._update_state_post_measurement(qubit_idx, outcome)
         return outcome
 
@@ -273,7 +273,7 @@ class QstateEnt(QState):
             raise ValueError(msg)
 
         if order == "simult":
-            outcome = self.rng().choice(
+            outcome = self.rng.choice(
                 np.arange(len(self._state)), p=self._calculate_measurement_probs()
             )
             self._state.fill(0 + 0j)
