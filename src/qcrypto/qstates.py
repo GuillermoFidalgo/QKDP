@@ -234,9 +234,9 @@ class QstateEnt(QState):
             self._state = np.zeros(2**self.num_qubits, dtype=np.complex128)
             self._state[0] = 1
         elif self.init_method == "random":
-            self._state = self.rng().rand(2**self.num_qubits) + 1j * self.rng().rand(
+            self._state = self.rng().random(
                 2**self.num_qubits
-            )
+            ) + 1j * self.rng().random(2**self.num_qubits)
             self._normalize_state()
 
     def measure(self, qubit_idx: int) -> int:
