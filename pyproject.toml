@@ -74,7 +74,6 @@ lint.isort.required-imports = ["from __future__ import annotations"]
 files = "src"
 python_version = "3.12"
 strict = true
-show_error_codes = true
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 warn_unreachable = true
 
