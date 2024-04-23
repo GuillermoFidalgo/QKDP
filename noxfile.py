@@ -41,3 +41,14 @@ def unittest(session: nox.Session) -> None:
     """
     session.install(".[tests]")
     session.run("python", "-m", "unittest", "discover", "-v")
+
+
+@nox.session
+def docs(session: nox.Session) -> None:
+    """
+    Build the docs. Pass "--serve" to serve.
+    """
+    session.install(".[docs]")
+    session.install("sphinx_rtd_theme")
+    session.chdir("docs")
+    session.run("sphinx-build", "-M", "html", ".", "build")

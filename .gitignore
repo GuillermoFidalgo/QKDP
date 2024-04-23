@@ -10,3 +10,5 @@ htmlcov
 settings.json
 *txt
 !*profile.txt
+__pycache__/
+.pytest_cache/
