@@ -15,3 +15,5 @@ dependencies:
   - line_profiler
   - rich
   - scipy
+  - mplhep
+  - scienceplots

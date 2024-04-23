@@ -8,3 +8,5 @@ dist
 htmlcov
 *.pyc
 settings.json
+*txt
+!qstate*txt
