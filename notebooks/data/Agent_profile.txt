@@ -1,0 +1,16 @@
+Timer unit: 1e-06 s
+
+Total time: 0.003517 s
+File: /var/folders/53/q9lwqxpd7lj_hbkx5dv2jy4w0000gn/T/ipykernel_42521/925610917.py
+Function: Agent_profile at line 8
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+     8                                           def Agent_profile():
+     9         1         10.0     10.0      0.3      Alice = Agent()
+    10         1          2.0      2.0      0.1      Alice.set_qstate(qstate=public_qstate,qstate_type='public')
+    11         1         94.0     94.0      2.7      Alice_base_choice = np.random.choice([True, False], size=(numqubits))
+    12         1          8.0      8.0      0.2      Alice_to_gate = np.nonzero(Alice_base_choice)[0]
+    13         1       1163.0   1163.0     33.1      Alice.apply_gate(qstate_type="public", gate=H_gate, qubit_idx=Alice_to_gate)
+    14         1       2240.0   2240.0     63.7      Alice.get_key(qstate_type="public")
+    15                                               Alice.apply_gate(qstate_type="public", gate=H_gate, qubit_idx=Alice_to_gate)
