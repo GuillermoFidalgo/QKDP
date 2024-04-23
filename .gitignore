@@ -9,4 +9,4 @@ htmlcov
 *.pyc
 settings.json
 *txt
-!qstate*txt
+!*profile.txt
