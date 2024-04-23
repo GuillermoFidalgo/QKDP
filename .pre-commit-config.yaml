@@ -27,7 +27,6 @@ repos:
     hooks:
       - id: codespell
         args: ["src/", "notebooks/"]
-        exclude: "^(docs)/"
         additional_dependencies:
           - tomli
 
