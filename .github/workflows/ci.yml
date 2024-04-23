@@ -64,6 +64,10 @@ jobs:
           path: docs/build
 
   deploy:
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
     needs:
       - docs
     environment:
@@ -73,4 +77,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
