@@ -63,18 +63,40 @@ jobs:
         with:
           path: docs/build
           name: github-pages
+
+
   deploy:
+    
     permissions:
       contents: write
       pages: write
       id-token: write
-    needs:
-      - docs
+
+    needs: docs
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    # steps:
+    #   - name: Deploy to GitHub Pages
+    #     id: deployment
+    #     uses: actions/deploy-pages@v4
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: actions/checkout@v4
+
+      - name: Build HTML
+        uses: ammaraskar/sphinx-action@master
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-docs
+          path: docs/build/html/
+
+      - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+      # github_token: ${{ secrets.GITHUB_TOKEN }}
+      publish_dir: docs/build/html
