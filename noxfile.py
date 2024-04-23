@@ -53,8 +53,11 @@ def docs(session: nox.Session) -> None:
     session.chdir("docs")
     session.run("sphinx-build", "-M", "html", "source/", "build")
 
+
 @nox.session
 def serve(session: nox.Session) -> None:
     docs(session)
-    print("Launching docs at http://localhost:8000/ - use Ctrl-C to quit")
+    print(
+        "Launching docs at http://localhost:8000/ - use Ctrl-C to quit"
+    )  # ignore ruff
     session.run("python", "-m", "http.server", "8000", "-d", "build/html")
